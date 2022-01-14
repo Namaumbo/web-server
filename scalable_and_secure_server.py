@@ -1,14 +1,11 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+class http_handler(BaseHTTPRequestHandler):
+    print("working class")
+
 
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-
+    with HTTPServer(('', 8000), http_handler) as server:
+        # the server will serve the clients untill they have to close the connection
+        server.serve_forever()
