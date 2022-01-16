@@ -10,7 +10,7 @@ Error_Page = """\
         font-family:Sans-serif;
         text-align:center;
         font-size:35px"
-        >Welcome to Mandebvu Server </h2>
+        >Mandebvu Server Error log </h2>
         <hr />
         <br />
        <h1>Error accessing {path}</h1>
@@ -18,7 +18,6 @@ Error_Page = """\
        </body>
        </html>
        """
-configuration_path = r'configurations/configurations.ini'
 
 
 class case_no_file(object):
@@ -48,10 +47,7 @@ class case_always_fail(object):
         return True
 
     def act(self, handler):
-        handler.handle_file(self.index_path(handler))
-
-    def index_path(self, handler):
-        pass
+        handler.list_dir(handler.full_path)
 
 
 class case_directory_index_file(object):
@@ -68,9 +64,18 @@ class case_directory_index_file(object):
         handler.handle_file(self.index_path(handler))
 
 
+# html for listing the current directory listings
 Listing_Page = '''\
              <html>
              <body>
+             <h2
+              style="color:black;
+        font-family:Sans-serif;
+        text-align:center;
+        font-size:35px"
+             >Here are the resources</h2>
+             <hr/>
+             <br />
              <ul>
              {0}
              </ul>
@@ -79,7 +84,8 @@ Listing_Page = '''\
 
 # getting the configurations data
 server_configuration = ConfigParser()
-server_configuration.read(configuration_path)
+server_configuration.read(r'C:\Users\hp\PycharmProjects\pythonProject\Final Project\configurations\configurations.ini')
+
 # getting the sections from the config file
 
 server_obj = server_configuration["server_info"]
@@ -90,9 +96,6 @@ class http_handler(BaseHTTPRequestHandler):
              case_existing_file(),
              case_directory_index_file(),
              case_always_fail()]
-
-    def act(self, handler):
-        handler.list_dir(handler.full_path)
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
@@ -115,8 +118,8 @@ class http_handler(BaseHTTPRequestHandler):
     def handle_file(self, full_path):
         try:
             with open(full_path, 'rb') as reader:
-                content = reader.read().decode()
-            self.send_content(content)
+                content = reader.read()
+            self.send_content(content.encode(encoding='UTF-8'))
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
