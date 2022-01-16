@@ -2,22 +2,17 @@ import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 
-Error_Page = """\
-       <html>
-       <body>
-       <h2 
-        style="color:black;
-        font-family:Sans-serif;
-        text-align:center;
-        font-size:35px"
-        >Mandebvu Server Error log </h2>
-        <hr />
-        <br />
-       <h1>Error accessing {path}</h1>
-       <p>{msg}</p>
-       </body>
-       </html>
-       """
+
+# opening html files stored in htmlPages
+with open(r'htmlPages/Error_logs.html') as f:
+    html_string_error = f.read()
+
+# opening the listings of a directory
+with open(r'htmlPages/Listing_page.html') as f:
+    html_string_listing = f.read()
+
+# variable
+Error_Page = html_string_error
 
 
 class case_no_file(object):
@@ -65,29 +60,12 @@ class case_directory_index_file(object):
 
 
 # html for listing the current directory listings
-Listing_Page = '''\
-             <html>
-             <body>
-             <h2
-              style="color:black;
-        font-family:Sans-serif;
-        text-align:center;
-        font-size:35px"
-             >Here are the resources</h2>
-             <hr/>
-             <br />
-             <ul>
-             {0}
-             </ul>
-             </body>
-             </html>'''
-
+Listing_Page = html_string_listing
 # getting the configurations data
 server_configuration = ConfigParser()
-server_configuration.read(r'C:\Users\hp\PycharmProjects\pythonProject\Final Project\configurations\configurations.ini')
+server_configuration.read(r'configurations\configurations.ini')
 
 # getting the sections from the config file
-
 server_obj = server_configuration["server_info"]
 
 
