@@ -1,6 +1,6 @@
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from http_parser.http import HttpStream
+from configparser import ConfigParser
 
 Error_Page = """\
        <html>
@@ -18,6 +18,7 @@ Error_Page = """\
        </body>
        </html>
        """
+configuration_path = r'configurations/configurations.ini'
 
 
 class case_no_file(object):
@@ -46,6 +47,12 @@ class case_always_fail(object):
     def test(self, handler):
         return True
 
+    def act(self, handler):
+        handler.handle_file(self.index_path(handler))
+
+    def index_path(self, handler):
+        pass
+
 
 class case_directory_index_file(object):
     '''Serve index.html page for a directory.'''
@@ -61,8 +68,6 @@ class case_directory_index_file(object):
         handler.handle_file(self.index_path(handler))
 
 
-
-
 Listing_Page = '''\
              <html>
              <body>
@@ -71,6 +76,13 @@ Listing_Page = '''\
              </ul>
              </body>
              </html>'''
+
+# getting the configurations data
+server_configuration = ConfigParser()
+server_configuration.read(configuration_path)
+# getting the sections from the config file
+
+server_obj = server_configuration["server_info"]
 
 
 class http_handler(BaseHTTPRequestHandler):
@@ -82,8 +94,6 @@ class http_handler(BaseHTTPRequestHandler):
     def act(self, handler):
         handler.list_dir(handler.full_path)
 
-
-
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
         try:
@@ -93,7 +103,7 @@ class http_handler(BaseHTTPRequestHandler):
 
             # Figure out how to handle it.
             for case in self.Cases:
-                handler = case()
+                handler = case
                 if handler.test(self):
                     handler.act(self)
                     break
@@ -105,7 +115,7 @@ class http_handler(BaseHTTPRequestHandler):
     def handle_file(self, full_path):
         try:
             with open(full_path, 'rb') as reader:
-                content = reader.read()
+                content = reader.read().decode()
             self.send_content(content)
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
@@ -139,6 +149,6 @@ class http_handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    with HTTPServer(('', 8000), http_handler) as server:
+    with HTTPServer(('', int(server_obj['port'])), http_handler) as server:
         # the server will serve the clients until they have to close the connection
         server.serve_forever()
