@@ -1,0 +1,2 @@
+pytest
+cython>=0.29.3
