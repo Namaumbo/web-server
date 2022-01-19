@@ -75,6 +75,20 @@ class http_handler(BaseHTTPRequestHandler):
              case_directory_index_file(),
              case_always_fail()]
 
+    # mimetypes
+    extensions_map = {
+        '.manifest': 'text/cache-manifest',
+        '.html': 'text/html',
+        '.png': 'image/png',
+        '.jpg': 'image/jpg',
+        '.svg': 'image/svg+xml',
+        '.css': 'text/css',
+        'json': 'application / json',
+        '.xml': 'application/xml',
+        '.js': 'application/x-javascript',
+        '': 'application/octet-stream',  # Default
+    }
+
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
         try:
@@ -112,10 +126,14 @@ class http_handler(BaseHTTPRequestHandler):
 
     def list_dir(self, full_path):
         try:
+            # listing everything in that directory
             entries = os.listdir(full_path)
-            bullets = ['<li>{0}</li>'.format(e)
-                       for e in entries if not e.startswith('.')]
+
+            bullets = ['<li href={0}>{0}</li>'.format(e) for e in entries if not e.startswith('.')]
+
             page = Listing_Page.format('\n'.join(bullets))
+
+            # sending the contents
             self.send_content(page)
         except OSError as msg:
             msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
@@ -125,9 +143,14 @@ class http_handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-type", "text/html")
         self.send_header("Content-Length", str(len(content)))
+        self.send_response(200 , "ok")
         self.end_headers()
         self.wfile.write(content.encode(encoding="UTF-8"))
 
+        # this will be for logging and it is overriden
+    def log_message(self, format, *args) :
+        # will print the message oo crap first
+        print(" this will respond a request messgae")
 
 if __name__ == '__main__':
     with HTTPServer(('', int(server_obj['port'])), http_handler) as server:
