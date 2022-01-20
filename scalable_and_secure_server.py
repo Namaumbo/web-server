@@ -1,7 +1,7 @@
 import os
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-
 
 # opening html files stored in htmlPages
 with open(r'htmlPages/Error_logs.html') as f:
@@ -143,14 +143,21 @@ class http_handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-type", "text/html")
         self.send_header("Content-Length", str(len(content)))
-        self.send_response(200 , "ok")
+        self.send_response(200, "ok")
         self.end_headers()
         self.wfile.write(content.encode(encoding="UTF-8"))
 
         # this will be for logging and it is overriden
-    def log_message(self, format, *args) :
-        # will print the message oo crap first
-        print(" this will respond a request messgae")
+
+    def log_message(self, format, *args):
+        # This will print in the terminal
+        # printing twice not working as expected
+        print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
+                                                                            self.client_address[1],
+                                                                            args[0],
+                                                                            args[1]
+                                                                            ))
+
 
 if __name__ == '__main__':
     with HTTPServer(('', int(server_obj['port'])), http_handler) as server:
