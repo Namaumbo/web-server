@@ -130,7 +130,8 @@ class http_handler(BaseHTTPRequestHandler):
             # listing everything in that directory
             entries = os.listdir(full_path)
 
-            bullets = ['<li href={0}>{0}</li>'.format(e) for e in entries if not e.startswith('.')]
+            # links added to the listings but faulty
+            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if not e.startswith('.')]
 
             page = Listing_Page.format('\n'.join(bullets))
 
@@ -151,7 +152,7 @@ class http_handler(BaseHTTPRequestHandler):
     # this will check what mime is asked for by the client. and return the
     def check_mime_type(self, path):
 
-        print(self.log_request())
+        print("check the mime types")
 
 
 
