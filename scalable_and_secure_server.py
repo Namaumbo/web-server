@@ -89,6 +89,19 @@ class http_handler(BaseHTTPRequestHandler):
         '': 'application/octet-stream',  # Default
     }
 
+    # base, ext = posixpath.splitext(path)
+    # if ext in self.extensions_map:
+    #     return self.extensions_map[ext]
+    # ext = ext.lower()
+    # if ext in self.extensions_map:
+    #     return self.extensions_map[ext]
+    # guess, _ = mimetypes.guess_type(path)
+    # if guess:
+    #     return guess
+    # return 'application/octet-stream'
+
+
+
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
         try:
@@ -143,15 +156,30 @@ class http_handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-type", "text/html")
         self.send_header("Content-Length", str(len(content)))
-        self.send_response(200, "ok")
         self.end_headers()
         self.wfile.write(content.encode(encoding="UTF-8"))
 
-        # this will be for logging and it is overriden
+
+    # this will check what mime is asked for by the client. and return the
+    def check_mime_type(self, path):
+
+        print(self.log_request())
+
+
+
+
+
+
+
+
+
+
+
+
+    # this will be for logging and it is overriden
 
     def log_message(self, format, *args):
         # This will print in the terminal
-        # printing twice not working as expected
         print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
                                                                             self.client_address[1],
                                                                             args[0],
