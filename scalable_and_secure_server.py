@@ -89,18 +89,6 @@ class http_handler(BaseHTTPRequestHandler):
         '': 'application/octet-stream',  # Default
     }
 
-    # base, ext = posixpath.splitext(path)
-    # if ext in self.extensions_map:
-    #     return self.extensions_map[ext]
-    # ext = ext.lower()
-    # if ext in self.extensions_map:
-    #     return self.extensions_map[ext]
-    # guess, _ = mimetypes.guess_type(path)
-    # if guess:
-    #     return guess
-    # return 'application/octet-stream'
-
-
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
