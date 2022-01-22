@@ -1,4 +1,7 @@
+import mimetypes
 import os
+import posixpath
+import subprocess
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
@@ -89,7 +92,6 @@ class http_handler(BaseHTTPRequestHandler):
         '': 'application/octet-stream',  # Default
     }
 
-
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
         try:
@@ -110,9 +112,9 @@ class http_handler(BaseHTTPRequestHandler):
 
     def handle_file(self, full_path):
         try:
-            with open(full_path, 'rb') as reader:
+            with open(full_path, 'r') as reader:
                 content = reader.read()
-            self.send_content(content.encode(encoding='UTF-8'))
+            self.send_content(content)
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
@@ -141,28 +143,44 @@ class http_handler(BaseHTTPRequestHandler):
             msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
             self.handle_error(msg)
 
+        # this will check what mime is asked for by the client. and return the
+    def get_mimetype(self,content):
+        base, ext = posixpath.splitext(self.path)
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        ext = ext.lower()
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        guess, _ = mimetypes.guess_type(self.path)
+        if guess:
+            return guess
+        return 'application/octet-stream'
+
+    #     """Returns the MIME type of the given file.
+    #
+    #     :param filename: A valid path to a file
+    #     :type filename: str
+    #
+    #     :returns: The file's MIME type
+    #     :rtype: tuple
+    #     """
+    #     content_type, encoding = mimetypes.guess_type(content)
+    #     if content_type is None or encoding is not None:
+    #         content_type = "application/octet-stream"
+    #     return content_type.split("/", 1)
+
+
     def send_content(self, content, status=200):
+        mime_type = self.get_mimetype(content)
+        print(mime_type)
         self.send_response(status)
-        self.send_header("Content-type", "text/html")
+        self.send_header("Content-type", mime_type[1])
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
-        self.wfile.write(content.encode(encoding="UTF-8"))
-
-
-    # this will check what mime is asked for by the client. and return the
-    def check_mime_type(self, path):
-
-        print("check the mime types")
-
-
-
-
-
-
-
-
-
-
+        if isinstance(content, str):
+            self.wfile.write(content.encode(encoding="UTF-8"))
+        else:
+            self.wfile.write(content)
 
 
     # this will be for logging and it is overriden
