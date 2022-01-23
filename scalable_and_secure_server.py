@@ -170,28 +170,14 @@ class http_handler(BaseHTTPRequestHandler):
     # serving different types of contents
     def send_content(self, content, status=200):
         mime_type = self.get_mimetype(content)
-
-        if mime_type == "image/png":
-            self.send_response(status)
-            self.send_header("Content-type", "image/png")
-            self.end_headers()
-            self.wfile.write(content)
-
-        if mime_type == "application/pdf":
-            self.send_response(status)
-            self.send_header("Content-type", mime_type[1])
-            self.end_headers()
+        self.send_response(status)
+        self.send_header("Content-type", mime_type[1])
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        if isinstance(content, str):
             self.wfile.write(content.encode(encoding="UTF-8"))
-
         else:
-            self.send_response(status)
-            self.send_header("Content-type", mime_type[1])
-            self.send_header("Content-Length", str(len(content)))
-            self.end_headers()
-            if isinstance(content, str):
-                self.wfile.write(content.encode(encoding="UTF-8"))
-            else:
-                self.wfile.write(content)
+            self.wfile.write(content)
 
     # this will be for logging and it is overridden
     def log_message(self, format, *args):
