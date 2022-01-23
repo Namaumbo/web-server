@@ -7,6 +7,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 
 # opening html files stored in htmlPages
+import io
+
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
 
@@ -86,7 +88,8 @@ class http_handler(BaseHTTPRequestHandler):
         '.jpg': 'image/jpg',
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
-        'json': 'application / json',
+        '.json': 'application / json',
+        '.pdf': 'application/pdf',
         '.xml': 'application/xml',
         '.js': 'application/x-javascript',
         '': 'application/octet-stream',  # Default
@@ -97,6 +100,7 @@ class http_handler(BaseHTTPRequestHandler):
         try:
             # Figure out what exactly is being requested.
             global msg
+
             self.full_path = os.getcwd() + self.path
 
             # Figure out how to handle it.
@@ -112,9 +116,16 @@ class http_handler(BaseHTTPRequestHandler):
 
     def handle_file(self, full_path):
         try:
-            with open(full_path, 'r') as reader:
-                content = reader.read()
-            self.send_content(content)
+            # check the path file extension to hand files differently
+            extension = full_path.split(".")[1]
+            if extension != "png":
+                with open(full_path, 'r') as reader:
+                    content = reader.read()
+                    self.send_content(content)
+            else:
+                with open(full_path, 'rb') as reader:
+                    content = reader.read()
+                    self.send_content(content)
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
@@ -122,10 +133,9 @@ class http_handler(BaseHTTPRequestHandler):
         # Handle unknown objects.
 
     def handle_error(self, msg):
+
         content = Error_Page.format(path=self.path, msg=msg)
         self.send_content(content, 404)
-
-        # Send actual content.
 
     def list_dir(self, full_path):
         try:
@@ -143,8 +153,9 @@ class http_handler(BaseHTTPRequestHandler):
             msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
             self.handle_error(msg)
 
-        # this will check what mime is asked for by the client. and return the
-    def get_mimetype(self,content):
+        # this will check what mime is asked for by the client. and return the mime type
+
+    def get_mimetype(self, content):
         base, ext = posixpath.splitext(self.path)
         if ext in self.extensions_map:
             return self.extensions_map[ext]
@@ -156,35 +167,33 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-    #     """Returns the MIME type of the given file.
-    #
-    #     :param filename: A valid path to a file
-    #     :type filename: str
-    #
-    #     :returns: The file's MIME type
-    #     :rtype: tuple
-    #     """
-    #     content_type, encoding = mimetypes.guess_type(content)
-    #     if content_type is None or encoding is not None:
-    #         content_type = "application/octet-stream"
-    #     return content_type.split("/", 1)
-
-
+    # serving different types of contents
     def send_content(self, content, status=200):
         mime_type = self.get_mimetype(content)
-        print(mime_type)
-        self.send_response(status)
-        self.send_header("Content-type", mime_type[1])
-        self.send_header("Content-Length", str(len(content)))
-        self.end_headers()
-        if isinstance(content, str):
-            self.wfile.write(content.encode(encoding="UTF-8"))
-        else:
+
+        if mime_type == "image/png":
+            self.send_response(status)
+            self.send_header("Content-type", "image/png")
+            self.end_headers()
             self.wfile.write(content)
 
+        if mime_type == "application/pdf":
+            self.send_response(status)
+            self.send_header("Content-type", mime_type[1])
+            self.end_headers()
+            self.wfile.write(content.encode(encoding="UTF-8"))
 
-    # this will be for logging and it is overriden
+        else:
+            self.send_response(status)
+            self.send_header("Content-type", mime_type[1])
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            if isinstance(content, str):
+                self.wfile.write(content.encode(encoding="UTF-8"))
+            else:
+                self.wfile.write(content)
 
+    # this will be for logging and it is overridden
     def log_message(self, format, *args):
         # This will print in the terminal
         print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
