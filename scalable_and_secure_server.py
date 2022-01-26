@@ -1,20 +1,20 @@
+import html
 import mimetypes
 import os
 import posixpath
-import subprocess
-import sys
+import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 
 # opening html files stored in htmlPages
-import io
 
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
 
-# opening the listings of a directory
+# # opening the listings of a directory
 with open(r'htmlPages/Listing_page.html') as f:
     html_string_listing = f.read()
+
 
 # variable
 Error_Page = html_string_error
@@ -73,7 +73,10 @@ server_configuration.read(r'configurations\configurations.ini')
 # getting the sections from the config file
 server_obj = server_configuration["server_info"]
 
+directory_obj = server_configuration["directories"]
 
+
+# THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
              case_existing_file(),
@@ -101,7 +104,8 @@ class http_handler(BaseHTTPRequestHandler):
             # Figure out what exactly is being requested.
             global msg
 
-            self.full_path = os.getcwd() + self.path
+            # self.full_path = os.getcwd() + self.path
+            self.full_path = directory_obj["directory_served"] + self.path
 
             # Figure out how to handle it.
             for case in self.Cases:
@@ -116,16 +120,31 @@ class http_handler(BaseHTTPRequestHandler):
 
     def handle_file(self, full_path):
         try:
+
             # check the path file extension to hand files differently
+            # you have to remove the white spaces also from the path
+            # spaces comes with default %20  so need to be removed
             extension = full_path.split(".")[1]
-            if extension != "png":
+
+            if extension not in ["png", "jpg", "pdf"]:
                 with open(full_path, 'r') as reader:
                     content = reader.read()
                     self.send_content(content)
+
+                # serving pdf files not working from the client side
+            if extension == "pdf":
+
+                with open(full_path, 'rb') as file:
+                    reader = file.read(1024)
+                    while reader:
+                        if reader == "":
+                            break
+                        self.send_content(reader)
             else:
                 with open(full_path, 'rb') as reader:
                     content = reader.read()
                     self.send_content(content)
+
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
@@ -142,10 +161,37 @@ class http_handler(BaseHTTPRequestHandler):
             # listing everything in that directory
             entries = os.listdir(full_path)
 
-            # links added to the listings but faulty
-            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if not e.startswith('.')]
+            entries.sort(key=lambda a: a.lower())
 
-            page = Listing_Page.format('\n'.join(bullets))
+            for file in entries:
+                full_url = os.path.join(full_path, file)
+                display_name = file
+                if os.path.isdir(full_url):
+                    display_name = file + "/"
+                if os.path.islink(full_url):
+                    display_name = file + "@"
+                html.escape(display_name,quote=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # parsing the url
+            display_path = urllib.parse.unquote(self.path, errors='surrogatepass')
+
+            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
+                       not e.startswith('.')]
+
+            # appending the listings to the listing html page
+            page = Listing_Page.format('\n'.join(bullets), path=display_path)
 
             # sending the contents
             self.send_content(page)
@@ -158,7 +204,9 @@ class http_handler(BaseHTTPRequestHandler):
     def get_mimetype(self, content):
         base, ext = posixpath.splitext(self.path)
         if ext in self.extensions_map:
+            # return extenstion
             return self.extensions_map[ext]
+        # lowercase extensions
         ext = ext.lower()
         if ext in self.extensions_map:
             return self.extensions_map[ext]
@@ -179,7 +227,7 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
-    # this will be for logging and it is overridden
+    # this will be for logging and it is overridden from the baseHTTPhandler
     def log_message(self, format, *args):
         # This will print in the terminal
         print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],

@@ -1,3 +1,7 @@
+import urllib
 
-file = open("photo.png" ,"rb")
-print(file)
+import PyPDF2
+import urllib3
+
+
+hun = urllib3.parse
