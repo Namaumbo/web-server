@@ -104,8 +104,8 @@ class http_handler(BaseHTTPRequestHandler):
             # Figure out what exactly is being requested.
             global msg
 
-            # self.full_path = os.getcwd() + self.path
-            self.full_path = directory_obj["directory_served"] + self.path
+            self.full_path = os.getcwd() + self.path
+            # self.full_path = directory_obj["directory_served"] + self.path
 
             # Figure out how to handle it.
             for case in self.Cases:
