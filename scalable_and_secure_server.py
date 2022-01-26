@@ -160,30 +160,6 @@ class http_handler(BaseHTTPRequestHandler):
         try:
             # listing everything in that directory
             entries = os.listdir(full_path)
-
-            entries.sort(key=lambda a: a.lower())
-
-            for file in entries:
-                full_url = os.path.join(full_path, file)
-                display_name = file
-                if os.path.isdir(full_url):
-                    display_name = file + "/"
-                if os.path.islink(full_url):
-                    display_name = file + "@"
-                html.escape(display_name,quote=False)
-
-
-
-
-
-
-
-
-
-
-
-
-
             # parsing the url
             display_path = urllib.parse.unquote(self.path, errors='surrogatepass')
 
