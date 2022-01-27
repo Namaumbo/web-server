@@ -3,6 +3,7 @@ import mimetypes
 import os
 import posixpath
 import urllib
+# from bottle import run
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 
@@ -68,7 +69,7 @@ class case_directory_index_file(object):
 Listing_Page = html_string_listing
 # getting the configurations data
 server_configuration = ConfigParser()
-server_configuration.read(r'configurations\configurations.ini')
+server_configuration.read('./configurations/configurations.ini')
 
 # getting the sections from the config file
 server_obj = server_configuration["server_info"]
@@ -105,6 +106,7 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             self.full_path = os.getcwd() + self.path
+            # self.full_path = os.
             # self.full_path = directory_obj["directory_served"] + self.path
 
             # Figure out how to handle it.
@@ -214,6 +216,8 @@ class http_handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    with HTTPServer(('', int(server_obj['port'])), http_handler) as server:
-        # the server will serve the clients until they have to close the connection
+    print('server is stating.....')
+    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
+    with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+
         server.serve_forever()
