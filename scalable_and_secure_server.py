@@ -1,13 +1,17 @@
-import html
+# import html
 import mimetypes
 import os
 import posixpath
 import urllib
-# from bottle import run
+from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
+import threading, wave, pyaudio,pickle,struct
 
 # opening html files stored in htmlPages
+
+
+from urllib3.util import url
 
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
@@ -15,7 +19,6 @@ with open(r'htmlPages/Error_logs.html') as f:
 # # opening the listings of a directory
 with open(r'htmlPages/Listing_page.html') as f:
     html_string_listing = f.read()
-
 
 # variable
 Error_Page = html_string_error
@@ -89,6 +92,7 @@ class http_handler(BaseHTTPRequestHandler):
         '.manifest': 'text/cache-manifest',
         '.html': 'text/html',
         '.png': 'image/png',
+        '.mp3': 'audio/mpeg',
         '.jpg': 'image/jpg',
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
@@ -101,13 +105,14 @@ class http_handler(BaseHTTPRequestHandler):
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
+
         try:
             # Figure out what exactly is being requested.
             global msg
 
-            self.full_path = os.getcwd() + self.path
+            # self.full_path = os.getcwd() + self.path
             # self.full_path = os.
-            # self.full_path = directory_obj["directory_served"] + self.path
+            self.full_path = directory_obj["directory_served"] + self.path
 
             # Figure out how to handle it.
             for case in self.Cases:
@@ -119,6 +124,33 @@ class http_handler(BaseHTTPRequestHandler):
         # Handle errors.
         except Exception as msg:
             self.handle_error(msg)
+
+    # url logic
+
+    def url_fix(self, path):
+
+        path_parts = path.split('/')
+        head_parts = []
+        for part in path_parts[:-1]:
+            if part == '..':
+                head_parts.pop()
+            elif part and part != '.':
+                head_parts.append(part)
+        if path_parts:
+            tail_part = path_parts.pop()
+            if tail_part:
+                if tail_part == '..':
+                    head_parts.pop()
+                    tail_part = ''
+                elif tail_part == '.':
+                    tail_part = ''
+        else:
+            tail_part = ''
+
+        splitpath = ('/' + '/'.join(head_parts), tail_part)
+        collapsed_path = "/".join(splitpath)
+
+        return collapsed_path
 
     def handle_file(self, full_path):
         try:
@@ -163,14 +195,22 @@ class http_handler(BaseHTTPRequestHandler):
             # listing everything in that directory
             entries = os.listdir(full_path)
             # parsing the url
-            display_path = urllib.parse.unquote(self.path, errors='surrogatepass')
+            display_path = urllib.parse.unquote(self.path, errors='surrogates')
 
+            # this will append the url with / for it not to redirect
+            if not self.path.endswith('/'):
+                # status  A browser redirects to the new URL and search
+                # engines update their links to the resource
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                # then the header will totify the location
+                self.send_header("Location", self.path + "/")
+                self.end_headers()
+                return None
             bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
                        not e.startswith('.')]
 
             # appending the listings to the listing html page
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
-
             # sending the contents
             self.send_content(page)
         except OSError as msg:
@@ -195,8 +235,10 @@ class http_handler(BaseHTTPRequestHandler):
 
     # serving different types of contents
     def send_content(self, content, status=200):
+        f = self.url_fix(self.path)
         mime_type = self.get_mimetype(content)
         self.send_response(status)
+        self.send_header("Location", self.full_path)
         self.send_header("Content-type", mime_type[1])
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
@@ -219,5 +261,4 @@ if __name__ == '__main__':
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
     with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
-
         server.serve_forever()
