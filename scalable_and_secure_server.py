@@ -6,7 +6,7 @@ import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-import threading, wave, pyaudio,pickle,struct
+import threading, wave,pickle,struct
 
 # opening html files stored in htmlPages
 
@@ -110,11 +110,15 @@ class http_handler(BaseHTTPRequestHandler):
             # Figure out what exactly is being requested.
             global msg
 
-            # self.full_path = os.getcwd() + self.path
-            # self.full_path = os.
-            self.full_path = directory_obj["directory_served"] + self.path
+            # removing the white spaces
+            self.full_path = os.getcwd() + self.path
+            # self.full_path = directory_obj["directory_served"] + self.path
+            # split the path by the spaces given as %20 by default
+            full_path = self.full_path.split("%20")
+            # then join the list of path parts by space
+            self.full_path = " ".join(full_path)
 
-            # Figure out how to handle it.
+            # Figure out how to handle it.s
             for case in self.Cases:
                 handler = case
                 if handler.test(self):
@@ -127,30 +131,7 @@ class http_handler(BaseHTTPRequestHandler):
 
     # url logic
 
-    def url_fix(self, path):
 
-        path_parts = path.split('/')
-        head_parts = []
-        for part in path_parts[:-1]:
-            if part == '..':
-                head_parts.pop()
-            elif part and part != '.':
-                head_parts.append(part)
-        if path_parts:
-            tail_part = path_parts.pop()
-            if tail_part:
-                if tail_part == '..':
-                    head_parts.pop()
-                    tail_part = ''
-                elif tail_part == '.':
-                    tail_part = ''
-        else:
-            tail_part = ''
-
-        splitpath = ('/' + '/'.join(head_parts), tail_part)
-        collapsed_path = "/".join(splitpath)
-
-        return collapsed_path
 
     def handle_file(self, full_path):
         try:
@@ -202,7 +183,7 @@ class http_handler(BaseHTTPRequestHandler):
                 # status  A browser redirects to the new URL and search
                 # engines update their links to the resource
                 self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                # then the header will totify the location
+                # then the header will Notify the location
                 self.send_header("Location", self.path + "/")
                 self.end_headers()
                 return None
@@ -222,7 +203,7 @@ class http_handler(BaseHTTPRequestHandler):
     def get_mimetype(self, content):
         base, ext = posixpath.splitext(self.path)
         if ext in self.extensions_map:
-            # return extenstion
+            # return extension
             return self.extensions_map[ext]
         # lowercase extensions
         ext = ext.lower()
@@ -235,7 +216,7 @@ class http_handler(BaseHTTPRequestHandler):
 
     # serving different types of contents
     def send_content(self, content, status=200):
-        f = self.url_fix(self.path)
+
         mime_type = self.get_mimetype(content)
         self.send_response(status)
         self.send_header("Location", self.full_path)
