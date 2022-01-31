@@ -6,7 +6,7 @@ import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-import threading, wave,pickle,struct
+import threading, wave, pickle, struct
 
 # opening html files stored in htmlPages
 
@@ -91,6 +91,7 @@ class http_handler(BaseHTTPRequestHandler):
     extensions_map = {
         '.manifest': 'text/cache-manifest',
         '.html': 'text/html',
+        '.txt': 'text/txt',
         '.png': 'image/png',
         '.mp3': 'audio/mpeg',
         '.jpg': 'image/jpg',
@@ -111,8 +112,8 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             # removing the white spaces
-            self.full_path = os.getcwd() + self.path
-            # self.full_path = directory_obj["directory_served"] + self.path
+            # self.full_path = os.getcwd() + self.path
+            self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
             # then join the list of path parts by space
@@ -131,8 +132,6 @@ class http_handler(BaseHTTPRequestHandler):
 
     # url logic
 
-
-
     def handle_file(self, full_path):
         try:
 
@@ -141,20 +140,21 @@ class http_handler(BaseHTTPRequestHandler):
             # spaces comes with default %20  so need to be removed
             extension = full_path.split(".")[1]
 
-            if extension not in ["png", "jpg", "pdf"]:
+            if extension not in ["png", "jpg", "pdf", "text"]:
                 with open(full_path, 'r') as reader:
                     content = reader.read()
                     self.send_content(content)
 
                 # serving pdf files not working from the client side
-            if extension == "pdf":
+            if extension == ".pdf":
 
                 with open(full_path, 'rb') as file:
                     reader = file.read(1024)
                     while reader:
                         if reader == "":
+                            self.send_content(reader)
                             break
-                        self.send_content(reader)
+
             else:
                 with open(full_path, 'rb') as reader:
                     content = reader.read()
