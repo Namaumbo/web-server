@@ -1,6 +1,5 @@
-# import html
+
 import codecs
-import hashlib
 import mimetypes
 import os
 import posixpath
@@ -9,12 +8,9 @@ from datetime import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-import threading, wave, pickle, struct
-
-# opening html files stored in htmlPages
 from socketserver import ThreadingMixIn
 
-from urllib3.util import url
+# opening html files stored in htmlPages
 
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
@@ -139,8 +135,6 @@ class http_handler(BaseHTTPRequestHandler):
         try:
 
             # check the path file extension to hand files differently
-            # you have to remove the white spaces also from the path
-            # spaces comes with default %20  so need to be removed
             extension = full_path.split(".")[1]
 
             if extension not in ["png", "jpg", "pdf", "txt", "mp3"]:
@@ -148,11 +142,11 @@ class http_handler(BaseHTTPRequestHandler):
                     content = reader.read()
                     self.send_content(content)
 
-                # serving pdf files not working from the client side
+                # serving pdf files
             if extension == "pdf":
                 try:
 
-                    # using manual opening and reading untill all the bytes are read
+                    # using manual opening and reading until all the bytes are read
                     file = open(full_path, 'rb')
                     st = os.fstat(file.fileno())
                     length = st.st_size
