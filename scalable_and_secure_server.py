@@ -12,7 +12,7 @@ from configparser import ConfigParser
 import threading, wave, pickle, struct
 
 # opening html files stored in htmlPages
-
+from socketserver import ThreadingMixIn
 
 from urllib3.util import url
 
@@ -151,10 +151,13 @@ class http_handler(BaseHTTPRequestHandler):
                 # serving pdf files not working from the client side
             if extension == "pdf":
                 try:
+
+                    # using manual opening and reading untill all the bytes are read
                     file = open(full_path, 'rb')
                     st = os.fstat(file.fileno())
                     length = st.st_size
                     data = file.read()
+
                     self.send_response(200)
                     self.send_header('Content-type', 'application/pdf')
                     self.send_header('Content-Length', str(length))
@@ -164,11 +167,13 @@ class http_handler(BaseHTTPRequestHandler):
                     self.wfile.write(data)
                     f.close()
 
+
                 except IOError:
                     self.log_error('File Not Found: %s' % self.path, 404)
 
 
             else:
+
                 with open(full_path, 'rb') as reader:
                     content = reader.read()
                     self.send_content(content)
@@ -247,12 +252,16 @@ class http_handler(BaseHTTPRequestHandler):
         print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
                                                                             self.client_address[1],
                                                                             args[0],
-                                                                            args[1]
-                                                                            ))
+                                                                            args[1]))
+
+
+# this class will allow multiple clients to be served at once
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
 
 
 if __name__ == '__main__':
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
-    with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+    with ThreadedHTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
