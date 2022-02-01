@@ -1,8 +1,11 @@
 # import html
+import codecs
+import hashlib
 import mimetypes
 import os
 import posixpath
 import urllib
+from datetime import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
@@ -93,12 +96,12 @@ class http_handler(BaseHTTPRequestHandler):
         '.html': 'text/html',
         '.txt': 'text/txt',
         '.png': 'image/png',
-        '.mp3': 'audio/mpeg',
         '.jpg': 'image/jpg',
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
         '.json': 'application / json',
         '.pdf': 'application/pdf',
+        '.mp3': 'application/x-mplayer2',
         '.xml': 'application/xml',
         '.js': 'application/x-javascript',
         '': 'application/octet-stream',  # Default
@@ -140,20 +143,30 @@ class http_handler(BaseHTTPRequestHandler):
             # spaces comes with default %20  so need to be removed
             extension = full_path.split(".")[1]
 
-            if extension not in ["png", "jpg", "pdf", "text"]:
+            if extension not in ["png", "jpg", "pdf", "txt", "mp3"]:
                 with open(full_path, 'r') as reader:
                     content = reader.read()
                     self.send_content(content)
 
                 # serving pdf files not working from the client side
-            if extension == ".pdf":
+            if extension == "pdf":
+                try:
+                    file = open(full_path, 'rb')
+                    st = os.fstat(file.fileno())
+                    length = st.st_size
+                    data = file.read()
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/pdf')
+                    self.send_header('Content-Length', str(length))
+                    self.send_header('Keep-Alive', 'timeout=5, max=100')
+                    self.send_header('Accept-Ranges', 'bytes')
+                    self.end_headers()
+                    self.wfile.write(data)
+                    f.close()
 
-                with open(full_path, 'rb') as file:
-                    reader = file.read(1024)
-                    while reader:
-                        if reader == "":
-                            self.send_content(reader)
-                            break
+                except IOError:
+                    self.log_error('File Not Found: %s' % self.path, 404)
+
 
             else:
                 with open(full_path, 'rb') as reader:
