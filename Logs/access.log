@@ -1,0 +1,7 @@
+41.70.47.38 - -[ 02 Feb 2022 22:00:24 GMT] - - "GET /Desktop/ HTTP/1.1" 200 
+41.70.47.38 - -[ 02 Feb 2022 22:01:09 GMT] - - "GET /Desktop/assignments/ HTTP/1.1" 200 
+41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /Desktop/AUD-20211108-WA0018.mp3 HTTP/1.1" 200 
+41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /Desktop/AUD-20211108-WA0018.mp3 HTTP/1.1" 200 
+41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /favicon.ico HTTP/1.1" 404 
+41.70.47.38 - -[ 02 Feb 2022 22:03:21 GMT] - - "GET /Desktop/Daelo%20School/ HTTP/1.1" 200 
+41.70.47.38 - -[ 02 Feb 2022 22:03:33 GMT] - - "GET /Desktop/Daelo%20School/physics/ HTTP/1.1" 200 

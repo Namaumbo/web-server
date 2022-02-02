@@ -79,6 +79,17 @@ server_obj = server_configuration["server_info"]
 directory_obj = server_configuration["directories"]
 
 
+
+def accesslog(self ,*args):
+    # ip address - authantication - [date and time]
+    # "request from the client"[HTTP
+    # action, status, sizeinbytes
+    # identifier of the web browser]
+
+    f = open("Logs/access.log", "a")
+    f.write('{} - -[{}] - - "{}" {} \n'.format(self.client_address[0],self.date_time_string().split(",")[1], args[0], args[1]))
+    f.close()
+
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
@@ -243,6 +254,7 @@ class http_handler(BaseHTTPRequestHandler):
     # this will be for logging and it is overridden from the baseHTTPhandler
     def log_message(self, format, *args):
         # This will print in the terminal
+        accesslog(self,*args)
         print("host : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
                                                                             self.client_address[1],
                                                                             args[0],
@@ -257,5 +269,8 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 if __name__ == '__main__':
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
+    # with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+    #     server.serve_forever()
+
     with ThreadedHTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
