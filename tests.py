@@ -1,7 +1,5 @@
-import urllib
+import  requests
 
-import PyPDF2
-import urllib3
+res = requests.get('https://api.github.com',headers)
 
-
-hun = urllib3.parse
+print(res.headers)

@@ -1,17 +1,1 @@
-41.70.47.38 - -[ 02 Feb 2022 22:00:24 GMT] - - "GET /Desktop/ HTTP/1.1" 200 
-41.70.47.38 - -[ 02 Feb 2022 22:01:09 GMT] - - "GET /Desktop/assignments/ HTTP/1.1" 200 
-41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /Desktop/AUD-20211108-WA0018.mp3 HTTP/1.1" 200 
-41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /Desktop/AUD-20211108-WA0018.mp3 HTTP/1.1" 200 
-41.70.47.38 - -[ 02 Feb 2022 22:01:12 GMT] - - "GET /favicon.ico HTTP/1.1" 404 
-41.70.47.38 - -[ 02 Feb 2022 22:03:21 GMT] - - "GET /Desktop/Daelo%20School/ HTTP/1.1" 200 
-41.70.47.38 - -[ 02 Feb 2022 22:03:33 GMT] - - "GET /Desktop/Daelo%20School/physics/ HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:22 GMT] - - "GET / HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:46 GMT] - - "GET /testFolder HTTP/1.1" 301 
-41.70.47.38 - -[ 03 Feb 2022 01:03:46 GMT] - - "GET /testFolder/ HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:49 GMT] - - "GET /testFolder/Assignment.pdf HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:53 GMT] - - "GET /testFolder/photo%201.png HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:58 GMT] - - "GET /testFolder/Ulendo%20%20featuring%20Lawi.mp3 HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:03:58 GMT] - - "GET /testFolder/Ulendo%20%20featuring%20Lawi.mp3 HTTP/1.1" 200 
-41.70.47.38 - -[ 03 Feb 2022 01:16:20 GMT] - - "GET / HTTP/1.1" 200 
-127.0.0.1 - -[ 03 Feb 2022 01:17:37 GMT] - - "GET / HTTP/1.1" 200 
-127.0.0.1 - -[ 03 Feb 2022 01:17:37 GMT] - - "GET /favicon.ico HTTP/1.1" 404 
+41.70.47.17 - -[ 03 Feb 2022 22:09:35 GMT] - - "<module 'urllib.request' from 'D:\\hp\\anaconda\\lib\\urllib\\request.py'>" GET /Desktop/AUD-20210722-WA0040.mp3 HTTP/1.1 - - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36 Edg/97.0.1072.76  
