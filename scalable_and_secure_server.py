@@ -7,7 +7,6 @@ from datetime import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-from socketserver import ThreadingMixIn, _Threads, _NoThreads
 import threading
 
 # opening html files stored in htmlPages
@@ -263,50 +262,13 @@ class http_handler(BaseHTTPRequestHandler):
 
 
 # this class will allow multiple clients to be served at once
-class MultipleRequestHandler(HTTPServer):
-    """Multiple-request class to handle each request in a new thread."""
 
-    # Decides how threads will act upon termination of the
-    # main process
-    daemon_threads = False
-    # If true, server_close() waits until all non-daemonic threads terminate.
-    block_on_close = True
-    # creating Threads object
-    # used by server_close() to wait for all threads completion.
-    _threads = _NoThreads()
-
-    def process_request_thread(self, request, client_address):
-        """Same as in BaseServer but as a thread.
-
-        In addition, exception handling is done here.
-
-        """
-        try:
-            self.finish_request(request, client_address)
-        except Exception:
-            self.handle_error(request, client_address)
-        finally:
-            self.shutdown_request(request)
-
-    def process_request(self, request, client_address):
-        """Start a new thread to process the request."""
-        if self.block_on_close:
-            vars(self).setdefault('_threads', _Threads())
-        t = threading.Thread(target=self.process_request_thread,
-                             args=(request, client_address))
-        t.daemon = self.daemon_threads
-        self._threads.append(t)
-        t.start()
-
-    def server_close(self):
-        super().server_close()
-        self._threads.join()
 
 
 if __name__ == '__main__':
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
-    with MultipleRequestHandler((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+    with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
     # with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
     #     server.serve_forever()
