@@ -2,6 +2,8 @@ import codecs
 import mimetypes
 import os
 import posixpath
+import socket
+import sys
 import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -78,6 +80,12 @@ server_obj = server_configuration["server_info"]
 directory_obj = server_configuration["directories"]
 
 
+# setting the ipaddress
+def getting_interface_ip():
+    interface_ip = socket.gethostbyname(socket.gethostname())
+    server_configuration.set("server_info", "host_ip", interface_ip)
+
+
 def access_log(self, *args, ):
     # ip address - authentication - [date and time]
     # "request from the client"[HTTP
@@ -87,7 +95,7 @@ def access_log(self, *args, ):
     f = open("Logs/access.log", "a")
     f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0], self.date_time_string().split(",")[1],
 
-                                                       args[1],args[2], self.headers["User-Agent"]))
+                                                          args[1], args[2], self.headers["User-Agent"]))
     f.close()
 
 
@@ -117,6 +125,8 @@ class http_handler(BaseHTTPRequestHandler):
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
+
+        # cheking the ip
 
         try:
             # Figure out what exactly is being requested.
@@ -306,9 +316,10 @@ class MultipleRequestsHandler(ThreadingMixIn, HTTPServer):
 
 
 if __name__ == '__main__':
+    getting_interface_ip()
     print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
-    with MultipleRequestsHandler((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
+    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
     # with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
     #     server.serve_forever()
