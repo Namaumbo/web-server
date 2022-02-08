@@ -2,13 +2,16 @@ import mimetypes
 import os
 import posixpath
 import socket
+import threading
 import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 from socketserver import ThreadingMixIn
 
+
 # opening html files stored in htmlPages
+from urllib import request
 
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
@@ -19,6 +22,7 @@ with open(r'htmlPages/Listing_page.html') as f:
 
 # variable
 Error_Page = html_string_error
+
 
 
 class case_no_file(object):
@@ -75,6 +79,7 @@ server_configuration.read('./configurations/configurations.ini')
 server_obj = server_configuration["server_info"]
 
 directory_obj = server_configuration["directories"]
+
 
 
 # setting the ipaddress
@@ -266,7 +271,7 @@ class http_handler(BaseHTTPRequestHandler):
     # this will be for logging and it is overridden from the baseHTTPhandler
     def log_message(self, format, *args):
         # This will print in the terminal
-        # access_log(self, request, *args)
+        access_log(self, request, *args)
         print("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
                                                                               self.client_address[1],
                                                                               args[0],
@@ -275,51 +280,48 @@ class http_handler(BaseHTTPRequestHandler):
 
 # this class will allow multiple clients to be served at once
 
-# class MultipleRequestsHandler(HTTPServer):
-#     """Mix-in class to handle each request in a new thread."""
-#
-#     # Decides how threads will act upon termination of the
-#     # main process
-#     daemon_threads = False
-#     # If true, server_close() waits until all non-daemonic threads terminate.
-#     block_on_close = True
-#     # For non-daemonic threads, list of threading.Threading objects
-#     # used by server_close() to wait for all threads completion.
-#     _threads = None
-#
-#     def process_request_thread(self, request, client_address):
-#         """Same as in BaseServer but as a thread.
-#
-#         In addition, exception handling is done here.
-#
-#         """
-#         try:
-#             self.finish_request(request, client_address)
-#         except Exception:
-#             self.handle_error(request, client_address)
-#         finally:
-#             self.shutdown_request(request)
-#
-#     def process_request(self, request, client_address):
-#         """Start a new thread to process the request."""
-#         t = threading.Thread(target=self.process_request_thread,
-#                              args=(request, client_address))
-#         t.daemon = self.daemon_threads
-#         if not t.daemon and self.block_on_close:
-#             if self._threads is None:
-#                 self._threads = []
-#             self._threads.append(t)
-#         t.start()
+class MultipleRequestsHandler(HTTPServer):
+    """Mix-in class to handle each request in a new thread."""
 
-class MultipleRequestsHandler(ThreadingMixIn, HTTPServer):
-    pass
+    # Decides how threads will act upon termination of the
+    # main process
+    daemon_threads = False
+    # If true, server_close() waits until all non-daemonic threads terminate.
+    block_on_close = True
+    # For non-daemonic threads, list of threading.Threading objects
+    # used by server_close() to wait for all threads completion.
+    _threads = None
+
+    def process_request_thread(self, request, client_address):
+        """Same as in BaseServer but as a thread.
+
+        In addition, exception handling is done here.
+
+        """
+        try:
+            self.finish_request(request, client_address)
+        except Exception:
+            self.handle_error(request, client_address)
+        finally:
+            self.shutdown_request(request)
+
+    def process_request(self, request, client_address):
+        """Start a new thread to process the request."""
+        t = threading.Thread(target=self.process_request_thread,
+                             args=(request, client_address))
+        t.daemon = self.daemon_threads
+        if not t.daemon and self.block_on_close:
+            if self._threads is None:
+                self._threads = []
+            self._threads.append(t)
+        t.start()
 
 
 if __name__ == '__main__':
     getting_interface_ip()
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    # with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-    #     server.serve_forever()
-    with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
+    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
+    # with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
+    #     server.serve_forever()
