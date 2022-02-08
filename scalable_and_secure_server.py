@@ -1,17 +1,14 @@
-import codecs
 import mimetypes
 import os
 import posixpath
 import socket
-import sys
 import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
+from socketserver import ThreadingMixIn
 
 # opening html files stored in htmlPages
-from socketserver import ThreadingMixIn
-from urllib import request
 
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
@@ -133,8 +130,8 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             # removing the white spaces
-            # self.full_path = os.getcwd() + self.path
-            self.full_path = directory_obj["directory_served"] + self.path
+            self.full_path = os.getcwd() + self.path
+            # self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
             # then join the list of path parts by space
@@ -151,7 +148,20 @@ class http_handler(BaseHTTPRequestHandler):
         except Exception as msg:
             self.handle_error(msg)
 
-    # url logic
+    # getting the mime type
+    def get_mimetype(self, content):
+        base, ext = posixpath.splitext(self.path)
+        if ext in self.extensions_map:
+            # return extension
+            return self.extensions_map[ext]
+        # lowercase extensions
+        ext = ext.lower()
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        guess, _ = mimetypes.guess_type(self.path)
+        if guess:
+            return guess
+        return 'application/octet-stream'
 
     def handle_file(self, full_path):
         try:
@@ -165,7 +175,7 @@ class http_handler(BaseHTTPRequestHandler):
                     self.send_content(content)
 
                 # serving pdf files
-            if extension == "pdf":
+            else:
                 try:
 
                     # using manual opening and reading until all the bytes are read
@@ -173,27 +183,19 @@ class http_handler(BaseHTTPRequestHandler):
                     st = os.fstat(file.fileno())
                     length = st.st_size
                     data = file.read()
-
+                    mime_type = self.get_mimetype(file)
                     self.send_response(200)
-                    self.send_header('Content-type', 'application/pdf')
+                    self.send_header('Content-type', mime_type[1])
                     self.send_header('Content-Length', str(length))
                     self.send_header('Keep-Alive', 'timeout=5, max=100')
                     self.send_header('Accept-Ranges', 'bytes')
                     self.end_headers()
                     self.wfile.write(data)
-                    f.close()
+                    file.close()
 
 
                 except IOError:
                     self.log_error('File Not Found: %s' % self.path, 404)
-
-
-            else:
-
-                with open(full_path, 'rb') as reader:
-                    content = reader.read()
-                    self.send_content(content)
-
         except IOError as msg:
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
@@ -234,23 +236,8 @@ class http_handler(BaseHTTPRequestHandler):
 
         # this will check what mime is asked for by the client. and return the mime type
 
-    def get_mimetype(self, content):
-        base, ext = posixpath.splitext(self.path)
-        if ext in self.extensions_map:
-            # return extension
-            return self.extensions_map[ext]
-        # lowercase extensions
-        ext = ext.lower()
-        if ext in self.extensions_map:
-            return self.extensions_map[ext]
-        guess, _ = mimetypes.guess_type(self.path)
-        if guess:
-            return guess
-        return 'application/octet-stream'
-
     # serving different types of contents
     def send_content(self, content, status=200):
-
         mime_type = self.get_mimetype(content)
         self.send_response(status)
         self.send_header("Location", self.full_path)
@@ -259,14 +246,14 @@ class http_handler(BaseHTTPRequestHandler):
         self.send_header("User-Agent", str(self.headers))
         self.end_headers()
         if isinstance(content, str):
-            self.wfile.write(content.encode(encoding="UTF-8"))
+            self.wfile.write(content.encode(encoding="utf-8"))
         else:
             self.wfile.write(content)
 
     # this will be for logging and it is overridden from the baseHTTPhandler
     def log_message(self, format, *args):
         # This will print in the terminal
-        access_log(self, request, *args)
+        # access_log(self, request, *args)
         print("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
                                                                               self.client_address[1],
                                                                               args[0],
@@ -316,10 +303,10 @@ class MultipleRequestsHandler(ThreadingMixIn, HTTPServer):
 
 
 if __name__ == '__main__':
-    getting_interface_ip()
+    # getting_interface_ip()
     print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-        server.serve_forever()
-    # with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
+    # with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
     #     server.serve_forever()
+    with HTTPServer((str(server_obj["host"]), int(server_obj['port'])), http_handler) as server:
+        server.serve_forever()

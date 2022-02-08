@@ -1,4 +1,10 @@
-{
+[
+  {
   "name": "Daleo Namzy",
-  "surname": "Namaubo"
-}
+  "surname": "Namaumbo"
+ },
+  {
+    "name":"other name",
+    "surname": "other name"
+  }
+]

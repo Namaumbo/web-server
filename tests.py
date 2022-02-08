@@ -5,3 +5,4 @@ proc = subprocess.check_output('ipconfig').decode('utf-8')
 
 ip = socket.gethostbyname(socket.gethostname())
 print(ip)
+"i dont know ehy"
