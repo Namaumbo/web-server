@@ -45,10 +45,10 @@ def getting_interface_ip():
 
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
-    Cases = [case_no_file(),
-             case_existing_file(),
-             case_directory_index_file(),
-             case_always_fail()]
+    # Cases = [case_no_file(),
+    #          case_existing_file(),
+    #          case_directory_index_file(),
+    #          case_always_fail()]
 
     # mimetypes
     extensions_map = {
