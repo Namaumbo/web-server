@@ -38,17 +38,12 @@ directory_obj = server_configuration["directories"]
 def getting_interface_ip():
     interface_ip = socket.gethostbyname(socket.gethostname())
     server_configuration.set("server_info", "host_ip", interface_ip)
-
-
-
-
-
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
-    # Cases = [case_no_file(),
-    #          case_existing_file(),
-    #          case_directory_index_file(),
-    #          case_always_fail()]
+    Cases = [case_no_file(),
+             case_existing_file(),
+             case_directory_index_file(),
+             case_always_fail()]
 
     # mimetypes
     extensions_map = {
@@ -114,56 +109,7 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-    def handle_file(self, full_path):
-        try:
 
-            # check the path file extension to hand files differently
-            extension = full_path.split(".")[1]
-
-            if extension in ["html"]:
-                with open(full_path, 'r') as reader:
-                    content = reader.read()
-                    self.send_content(content)
-                    # for some reason pdf works alone
-            elif extension == "pdf":
-                pdf_file = open(full_path, 'rb')
-                st = os.fstat(pdf_file.fileno())
-                length = st.st_size
-                data = pdf_file.read()
-                self.send_response(HTTPStatus.OK)
-                self.send_header('Content-type', 'application/pdf')
-                self.send_header('Content-length', str(length))
-                self.send_header('Keep-Alive', 'timeout=5 ,max=100')
-                self.send_header('Accept-Ranges', 'bytes')
-                self.end_headers()
-                self.wfile.write(data)
-                pdf_file.close()
-
-            else:
-                try:
-                    # using manual opening and reading until all the bytes are read
-                    file = open(full_path, 'rb')
-                    mime_type = self.get_mimetype(file)
-                    st = os.fstat(file.fileno())
-                    length = st.st_size
-                    data = file.read()
-                    self.send_response(200)
-                    self.send_header('Content-type', mime_type[1])
-                    self.send_header('Content-Length', str(length))
-                    self.send_header('Keep-Alive', 'timeout=5, max=100')
-                    self.send_header('Accept-Ranges', 'bytes')
-                    self.end_headers()
-                    self.wfile.write(data)
-                    file.close()
-
-
-                except IOError:
-                    self.log_error('File Not Found: %s' % self.path, 404)
-        except IOError as msg:
-            msg = "'{0}' cannot be read: {1}".format(self.path, msg)
-            self.handle_error(msg)
-
-        # Handle unknown objects.
 
     def handle_error(self, msg):
 
