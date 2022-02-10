@@ -1,4 +1,3 @@
-
 import mimetypes
 import os
 import posixpath
@@ -9,6 +8,8 @@ from urllib import request
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
+from fileHandlers.file_handler_class import case_no_file, case_existing_file, case_always_fail, \
+    case_directory_index_file
 
 # opening html files stored in htmlPages
 with open(r'htmlPages/Error_logs.html') as f:
@@ -20,7 +21,6 @@ with open(r'htmlPages/Listing_page.html') as f:
 
 # variable
 Error_Page = html_string_error
-
 
 # html for listing the current directory listings
 Listing_Page = html_string_listing
@@ -38,6 +38,8 @@ directory_obj = server_configuration["directories"]
 def getting_interface_ip():
     interface_ip = socket.gethostbyname(socket.gethostname())
     server_configuration.set("server_info", "host_ip", interface_ip)
+
+
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
@@ -109,8 +111,6 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-
-
     def handle_error(self, msg):
 
         content = Error_Page.format(path=self.path, msg=msg)
@@ -158,7 +158,6 @@ class http_handler(BaseHTTPRequestHandler):
             self.wfile.write(content.encode(encoding="utf-8"))
         else:
             self.wfile.write(content)
-
 
 
 # this class will allow multiple clients to be served at once
