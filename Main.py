@@ -1,18 +1,16 @@
+
 import mimetypes
 import os
 import posixpath
 import socket
 import threading
 import urllib
+from urllib import request
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-from socketserver import ThreadingMixIn
-
 
 # opening html files stored in htmlPages
-from urllib import request
-
 with open(r'htmlPages/Error_logs.html') as f:
     html_string_error = f.read()
 
@@ -22,51 +20,6 @@ with open(r'htmlPages/Listing_page.html') as f:
 
 # variable
 Error_Page = html_string_error
-
-
-
-class case_no_file(object):
-    '''File or directory does not exist.'''
-
-    def test(self, handler):
-        return not os.path.exists(handler.full_path)
-
-    def act(self, handler):
-        raise Exception("'{0}' not found".format(handler.path))
-
-
-class case_existing_file(object):
-    '''File exists.'''
-
-    def test(self, handler):
-        return os.path.isfile(handler.full_path)
-
-    def act(self, handler):
-        handler.handle_file(handler.full_path)
-
-
-class case_always_fail(object):
-    '''Base case if nothing else worked.'''
-
-    def test(self, handler):
-        return True
-
-    def act(self, handler):
-        handler.list_dir(handler.full_path)
-
-
-class case_directory_index_file(object):
-    '''Serve index.html page for a directory.'''
-
-    def index_path(self, handler):
-        return os.path.join(handler.full_path, 'index.html')
-
-    def test(self, handler):
-        return os.path.isdir(handler.full_path) and \
-               os.path.isfile(self.index_path(handler))
-
-    def act(self, handler):
-        handler.handle_file(self.index_path(handler))
 
 
 # html for listing the current directory listings
@@ -81,26 +34,10 @@ server_obj = server_configuration["server_info"]
 directory_obj = server_configuration["directories"]
 
 
-
 # setting the ipaddress
 def getting_interface_ip():
     interface_ip = socket.gethostbyname(socket.gethostname())
     server_configuration.set("server_info", "host_ip", interface_ip)
-
-
-def access_log(self, *args, ):
-    # ip address - authentication - [date and time]
-    # "request from the client"[HTTP
-    # action, status, size_in_bytes
-    # identifier of the web browser]
-
-    f = open("Logs/access.log", "a")
-    f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0], self.date_time_string().split(",")[1],
-
-                                                          args[1], args[2], self.headers["User-Agent"]))
-    f.close()
-
-
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
@@ -118,6 +55,7 @@ class http_handler(BaseHTTPRequestHandler):
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
         '.mp4': 'video/mpeg',
+        '.py': 'text/x-python-code',
         '.json': 'application/json',
         '.pdf': 'application/pdf',
         '.mp3': 'application/x-mplayer2',
@@ -136,10 +74,12 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             # removing the white spaces
-            self.full_path = os.getcwd() + self.path
-            # self.full_path = directory_obj["directory_served"] + self.path
+            # self.full_path = os.getcwd() + self.path
+
+            self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
+
             # then join the list of path parts by space
             self.full_path = " ".join(full_path)
 
@@ -169,56 +109,7 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-    def handle_file(self, full_path):
-        try:
 
-            # check the path file extension to hand files differently
-            extension = full_path.split(".")[1]
-
-            if extension in ["txt"]:
-                with open(full_path, 'r') as reader:
-                    content = reader.read()
-                    self.send_content(content)
-                    # for some reason pdf works alone
-            elif extension == "pdf":
-                pdf_file = open(full_path, 'rb')
-                st = os.fstat(pdf_file.fileno())
-                length = st.st_size
-                data = pdf_file.read()
-                self.send_response(HTTPStatus.OK)
-                self.send_header('Content-type', 'application/pdf')
-                self.send_header('Content-length', str(length))
-                self.send_header('Keep-Alive', 'timeout=5 ,max=100')
-                self.send_header('Accept-Ranges', 'bytes')
-                self.end_headers()
-                self.wfile.write(data)
-                pdf_file.close()
-
-            else:
-                try:
-                    # using manual opening and reading until all the bytes are read
-                    file = open(full_path, 'rb')
-                    mime_type = self.get_mimetype(file)
-                    st = os.fstat(file.fileno())
-                    length = st.st_size
-                    data = file.read()
-                    self.send_response(200)
-                    self.send_header('Content-type', mime_type[1])
-                    self.send_header('Content-Length', str(length))
-                    self.send_header('Keep-Alive', 'timeout=5, max=100')
-                    self.send_header('Accept-Ranges', 'bytes')
-                    self.end_headers()
-                    self.wfile.write(data)
-                    file.close()
-
-
-                except IOError:
-                    self.log_error('File Not Found: %s' % self.path, 404)
-        except IOError as msg:
-            msg = "'{0}' cannot be read: {1}".format(self.path, msg)
-            self.handle_error(msg)
-
-        # Handle unknown objects.
 
     def handle_error(self, msg):
 
@@ -268,14 +159,6 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
-    # this will be for logging and it is overridden from the baseHTTPhandler
-    def log_message(self, format, *args):
-        # This will print in the terminal
-        access_log(self, request, *args)
-        print("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
-                                                                              self.client_address[1],
-                                                                              args[0],
-                                                                              args[1]))
 
 
 # this class will allow multiple clients to be served at once
@@ -294,9 +177,6 @@ class MultipleRequestsHandler(HTTPServer):
 
     def process_request_thread(self, request, client_address):
         """Same as in BaseServer but as a thread.
-
-        In addition, exception handling is done here.
-
         """
         try:
             self.finish_request(request, client_address)
@@ -319,9 +199,11 @@ class MultipleRequestsHandler(HTTPServer):
 
 if __name__ == '__main__':
     getting_interface_ip()
+
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
     with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
         server.serve_forever()
+
     # with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
     #     server.serve_forever()
