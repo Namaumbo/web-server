@@ -1,15 +1,24 @@
+import sys
 from http.server import BaseHTTPRequestHandler
+import logging
 
 
 class server_logs(BaseHTTPRequestHandler):
+    # logging.basicConfig(filename="./Logs/access.log",
+    #                     format='%(Pastime)s %(message)s',
+    #                     filemode='w')
+    # logger = logging.getLogger()
+    #
+    # logger.setLevel(logging.DEBUG)
 
     # this will be for logging and it is overridden from the baseHTTHandler
-    def log_message(self,  *args):
+    def server_log(self, *args):
+
         # This will print in the terminal
-        print("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
-                                                                              self.client_address[1],
-                                                                              args[0],
-                                                                              args[1]))
+        sys.stderr.write("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
+                                                                                    self.client_address[1],
+                                                                                    args[0],
+                                                                                    args[1]))
 
     def access_log(self, *args, ):
         # ip address - authentication - [date and time]

@@ -4,12 +4,14 @@ import posixpath
 import socket
 import threading
 import urllib
-from urllib import request
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
 from fileHandlers.file_handler_class import case_no_file, case_existing_file, case_always_fail, \
     case_directory_index_file
+from logsHandlers.server_logs_class import server_logs
+
+
 
 # opening html files stored in htmlPages
 with open(r'htmlPages/Error_logs.html') as f:
@@ -159,9 +161,11 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
+    def log_message(self, format: str, *args):
+        server_logs.server_log(self, *args)
+
 
 # this class will allow multiple clients to be served at once
-
 class MultipleRequestsHandler(HTTPServer):
     """Mix-in class to handle each request in a new thread."""
 
@@ -195,14 +199,17 @@ class MultipleRequestsHandler(HTTPServer):
             self._threads.append(t)
         t.start()
 
-
+import socketserver
 if __name__ == '__main__':
     getting_interface_ip()
-
+    Port = 8000
     print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-        server.serve_forever()
+    # with MultipleRequestsHandler("", Port), http_handler) as server:
+    #     server.serve_forever()
+    with MultipleRequestsHandler(("", Port), http_handler) as httpd:
+        print("serving at port", Port)
+        httpd.serve_forever()
 
     # with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
     #     server.serve_forever()
