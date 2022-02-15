@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--Server Pools-->
+<!--Health check-->
+<!--High Availability-->
+<!--HTTP Protocol-->
+<!--Logging and Monitoring-->
+<!--Performance Tuning-->
+<!--SSL, TLS, and PKCS #11-->
+<!--Variables-->
+<!--Virtual Servers-->
+<serverConfiguration>
+    <httpEndpoint id="defaultHttpEndpoint"
+                  host="${env.HOST}"
+                  httpPort="8000"
+    />
+    <type>http</type>
+    <port>8000</port>
+<!--    if the user wishes to browser other folders and some subfolders will be redirected to index.html or index.php-->
+    <Directory host="/home"/>
+
+    </serverConfiguration>

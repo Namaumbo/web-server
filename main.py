@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import getopt, sys
 import posixpath
 import socket
 import threading
@@ -10,8 +11,30 @@ from configparser import ConfigParser
 from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
     case_directory_index_file
 from scripts.logsHandlers.LogsClass import Logs
+import xml.etree.ElementTree as ET
 
 
+configTree = ET.parse("./configurations/config.xml")
+
+# getting user port to bind or else server will bind to all interfaces
+
+# Remove 1st argument from the which is the file name
+# list of command line arguments
+argumentList = sys.argv[1:]
+
+short_options = "b:"
+# option to be entered in the terminal
+long_options = ["bind="]
+try:
+    arguments, values = getopt.getopt(argumentList, short_options, long_options)
+    for currentArgument, currentValue in arguments:
+        if currentArgument in ("-b", "--bind"):
+            # from here <ip/> in XML will be overridden
+            print("bind ip is ", currentValue)
+
+except getopt.error as err:
+    # output error, and return with an error code
+    sys.stdout.write(str(err))
 
 # opening html files stored in public_html
 with open(r'public_html/Error_logs.html') as f:
@@ -251,8 +274,6 @@ class MultipleRequestsHandler(HTTPServer):
 
 if __name__ == '__main__':
     getting_interface_ip()
-    Port = 8000
-    print('server is stating.....')
     print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
     with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
         print("serving at port", int(server_obj['port']))
