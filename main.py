@@ -1,26 +1,29 @@
-
+import cgi
+import logging
 import mimetypes
 import os
 import posixpath
 import socket
+import sys
 import threading
 import urllib
-from urllib import request
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
+from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
+    case_directory_index_file
+from scripts.logsHandlers.LogsClass import Logs
 
-# opening html files stored in htmlPages
-with open(r'htmlPages/Error_logs.html') as f:
+# opening html files stored in public_html
+with open(r'public_html/Error_logs.html') as f:
     html_string_error = f.read()
 
 # # opening the listings of a directory
-with open(r'htmlPages/Listing_page.html') as f:
+with open(r'public_html/Listing_page.html') as f:
     html_string_listing = f.read()
 
 # variable
 Error_Page = html_string_error
-
 
 # html for listing the current directory listings
 Listing_Page = html_string_listing
@@ -38,6 +41,8 @@ directory_obj = server_configuration["directories"]
 def getting_interface_ip():
     interface_ip = socket.gethostbyname(socket.gethostname())
     server_configuration.set("server_info", "host_ip", interface_ip)
+
+
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
@@ -63,6 +68,19 @@ class http_handler(BaseHTTPRequestHandler):
         '.js': 'application/x-javascript',
         '': 'application/octet-stream',  # Default
     }
+
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
+        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
+                     str(self.path), str(self.headers), post_data.decode('utf-8'))
+        self._set_response()
+        self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
@@ -109,8 +127,6 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-
-
     def handle_error(self, msg):
 
         content = Error_Page.format(path=self.path, msg=msg)
@@ -145,6 +161,55 @@ class http_handler(BaseHTTPRequestHandler):
 
         # this will check what mime is asked for by the client. and return the mime type
 
+    def handle_file(self, full_path):
+        try:
+
+            # check the path file extension to hand files differently
+            extension = full_path.split(".")[1]
+
+            if extension in ["txt"]:
+                with open(full_path, 'r') as reader:
+                    content = reader.read()
+                    self.send_content(content)
+                    # for some reason pdf works alone
+            elif extension == "pdf":
+                pdf_file = open(full_path, 'rb')
+                st = os.fstat(pdf_file.fileno())
+                length = st.st_size
+                data = pdf_file.read()
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-type', 'application/pdf')
+                self.send_header('Content-length', str(length))
+                self.send_header('Keep-Alive', 'timeout=5 ,max=100')
+                self.send_header('Accept-Ranges', 'bytes')
+                self.end_headers()
+                self.wfile.write(data)
+                pdf_file.close()
+
+            else:
+                try:
+                    # using manual opening and reading until all the bytes are read
+                    file = open(full_path, 'rb')
+                    mime_type = self.get_mimetype(file)
+                    st = os.fstat(file.fileno())
+                    length = st.st_size
+                    data = file.read()
+                    self.send_response(200)
+                    self.send_header('Content-type', mime_type[1])
+                    self.send_header('Content-Length', str(length))
+                    self.send_header('Keep-Alive', 'timeout=5, max=100')
+                    self.send_header('Accept-Ranges', 'bytes')
+                    self.end_headers()
+                    self.wfile.write(data)
+                    file.close()
+
+
+                except IOError:
+                    self.log_error('File Not Found: %s' % self.path, 404)
+        except IOError as msg:
+            msg = "'{0}' cannot be read: {1}".format(self.path, msg)
+            self.handle_error(msg)
+
     # serving different types of contents
     def send_content(self, content, status=200):
         mime_type = self.get_mimetype(content)
@@ -159,10 +224,11 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
+    def log_message(self, format: str, *args):
+        Logs.server_log(self, *args)
 
 
 # this class will allow multiple clients to be served at once
-
 class MultipleRequestsHandler(HTTPServer):
     """Mix-in class to handle each request in a new thread."""
 
@@ -198,12 +264,11 @@ class MultipleRequestsHandler(HTTPServer):
 
 
 if __name__ == '__main__':
-    getting_interface_ip()
-
+    # getting_interface_ip()
+    # Port = 8000
     print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-        server.serve_forever()
-
-    # with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-    #     server.serve_forever()
+    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
+    with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
+        print("serving at port", int(server_obj['port']))
+        logging.basicConfig(level=logging.INFO)
+        httpd.serve_forever()
