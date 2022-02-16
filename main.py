@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import getopt, sys
 import posixpath
 import socket
 import threading
@@ -7,67 +8,49 @@ import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
-from socketserver import ThreadingMixIn
+from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
+    case_directory_index_file
+from scripts.logsHandlers.LogsClass import Logs
+import xml.etree.ElementTree as ET
 
+configTree = ET.parse("./configurations/config.xml")
 
-# opening html files stored in htmlPages
-from urllib import request
+# getting user port to bind or else server will bind to all interfaces
+# Remove 1st argument from the which is the file name
+# list of command line arguments
+argumentList = sys.argv[1:]
 
-with open(r'htmlPages/Error_logs.html') as f:
+short_options = "b:"
+# option to be entered in the terminal
+long_options = ["bind="]
+
+try:
+
+    # check this code
+    arguments, values = getopt.getopt(argumentList, short_options, long_options)
+    for currentArgument, currentValue in arguments:
+        if currentArgument in ("-b", "--bind"):
+            # from here <ip/> in XML will be overridden
+            root_element = configTree.getroot()
+            for element in root_element.findall("ip"):
+                element.text = currentValue
+
+            configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
+
+except getopt.error as err:
+    # output error, and return with an error code
+    sys.stdout.write(str(err))
+
+# opening html files stored in public_html
+with open(r'public_html/Error_logs.html') as f:
     html_string_error = f.read()
 
 # # opening the listings of a directory
-with open(r'htmlPages/Listing_page.html') as f:
+with open(r'public_html/Listing_page.html') as f:
     html_string_listing = f.read()
 
 # variable
 Error_Page = html_string_error
-
-
-
-class case_no_file(object):
-    '''File or directory does not exist.'''
-
-    def test(self, handler):
-        return not os.path.exists(handler.full_path)
-
-    def act(self, handler):
-        raise Exception("'{0}' not found".format(handler.path))
-
-
-class case_existing_file(object):
-    '''File exists.'''
-
-    def test(self, handler):
-        return os.path.isfile(handler.full_path)
-
-    def act(self, handler):
-        handler.handle_file(handler.full_path)
-
-
-class case_always_fail(object):
-    '''Base case if nothing else worked.'''
-
-    def test(self, handler):
-        return True
-
-    def act(self, handler):
-        handler.list_dir(handler.full_path)
-
-
-class case_directory_index_file(object):
-    '''Serve index.html page for a directory.'''
-
-    def index_path(self, handler):
-        return os.path.join(handler.full_path, 'index.html')
-
-    def test(self, handler):
-        return os.path.isdir(handler.full_path) and \
-               os.path.isfile(self.index_path(handler))
-
-    def act(self, handler):
-        handler.handle_file(self.index_path(handler))
-
 
 # html for listing the current directory listings
 Listing_Page = html_string_listing
@@ -81,24 +64,10 @@ server_obj = server_configuration["server_info"]
 directory_obj = server_configuration["directories"]
 
 
-
 # setting the ipaddress
 def getting_interface_ip():
     interface_ip = socket.gethostbyname(socket.gethostname())
     server_configuration.set("server_info", "host_ip", interface_ip)
-
-
-def access_log(self, *args, ):
-    # ip address - authentication - [date and time]
-    # "request from the client"[HTTP
-    # action, status, size_in_bytes
-    # identifier of the web browser]
-
-    f = open("Logs/access.log", "a")
-    f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0], self.date_time_string().split(",")[1],
-
-                                                          args[1], args[2], self.headers["User-Agent"]))
-    f.close()
 
 
 # THE START OF THE SERVER
@@ -118,6 +87,7 @@ class http_handler(BaseHTTPRequestHandler):
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
         '.mp4': 'video/mpeg',
+        '.py': 'text/x-python-code',
         '.json': 'application/json',
         '.pdf': 'application/pdf',
         '.mp3': 'application/x-mplayer2',
@@ -136,10 +106,12 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             # removing the white spaces
-            self.full_path = os.getcwd() + self.path
-            # self.full_path = directory_obj["directory_served"] + self.path
+            # self.full_path = os.getcwd() + self.path
+
+            self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
+
             # then join the list of path parts by space
             self.full_path = " ".join(full_path)
 
@@ -168,6 +140,40 @@ class http_handler(BaseHTTPRequestHandler):
         if guess:
             return guess
         return 'application/octet-stream'
+
+    def handle_error(self, msg):
+
+        content = Error_Page.format(path=self.path, msg=msg)
+        self.send_content(content, 404)
+
+    def list_dir(self, full_path):
+        try:
+            # listing everything in that directory
+            entries = os.listdir(full_path)
+            # parsing the url
+            display_path = urllib.parse.unquote(self.path, errors='surrogates')
+
+            # this will append the url with / for it not to redirect
+            if not self.path.endswith('/'):
+                # status  A browser redirects to the new URL and search
+                # engines update their links to the resource
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                # then the header will Notify the location
+                self.send_header("Location", self.path + "/")
+                self.end_headers()
+                return None
+            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
+                       not e.startswith('.')]
+
+            # appending the listings to the listing html page
+            page = Listing_Page.format('\n'.join(bullets), path=display_path)
+            # sending the contents
+            self.send_content(page)
+        except OSError as msg:
+            msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
+            self.handle_error(msg)
+
+        # this will check what mime is asked for by the client. and return the mime type
 
     def handle_file(self, full_path):
         try:
@@ -218,42 +224,6 @@ class http_handler(BaseHTTPRequestHandler):
             msg = "'{0}' cannot be read: {1}".format(self.path, msg)
             self.handle_error(msg)
 
-        # Handle unknown objects.
-
-    def handle_error(self, msg):
-
-        content = Error_Page.format(path=self.path, msg=msg)
-        self.send_content(content, 404)
-
-    def list_dir(self, full_path):
-        try:
-            # listing everything in that directory
-            entries = os.listdir(full_path)
-            # parsing the url
-            display_path = urllib.parse.unquote(self.path, errors='surrogates')
-
-            # this will append the url with / for it not to redirect
-            if not self.path.endswith('/'):
-                # status  A browser redirects to the new URL and search
-                # engines update their links to the resource
-                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                # then the header will Notify the location
-                self.send_header("Location", self.path + "/")
-                self.end_headers()
-                return None
-            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
-                       not e.startswith('.')]
-
-            # appending the listings to the listing html page
-            page = Listing_Page.format('\n'.join(bullets), path=display_path)
-            # sending the contents
-            self.send_content(page)
-        except OSError as msg:
-            msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
-            self.handle_error(msg)
-
-        # this will check what mime is asked for by the client. and return the mime type
-
     # serving different types of contents
     def send_content(self, content, status=200):
         mime_type = self.get_mimetype(content)
@@ -268,18 +238,11 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
-    # this will be for logging and it is overridden from the baseHTTPhandler
-    def log_message(self, format, *args):
-        # This will print in the terminal
-        access_log(self, request, *args)
-        print("client : {} | port : {} | http request :{}, status :{}".format(self.client_address[0],
-                                                                              self.client_address[1],
-                                                                              args[0],
-                                                                              args[1]))
+    def log_message(self, format: str, *args):
+        Logs.server_log(self, *args)
 
 
 # this class will allow multiple clients to be served at once
-
 class MultipleRequestsHandler(HTTPServer):
     """Mix-in class to handle each request in a new thread."""
 
@@ -294,9 +257,6 @@ class MultipleRequestsHandler(HTTPServer):
 
     def process_request_thread(self, request, client_address):
         """Same as in BaseServer but as a thread.
-
-        In addition, exception handling is done here.
-
         """
         try:
             self.finish_request(request, client_address)
@@ -318,10 +278,17 @@ class MultipleRequestsHandler(HTTPServer):
 
 
 if __name__ == '__main__':
-    getting_interface_ip()
-    print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    with MultipleRequestsHandler((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-        server.serve_forever()
-    # with HTTPServer((str(server_obj["host_ip"]), int(server_obj['port'])), http_handler) as server:
-    #     server.serve_forever()
+
+    if configTree.getroot()[3].text is None:
+        print("Server started on port:: http://{x.x.x.x}:%s" % int(server_obj['port']))
+        with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
+            print("serving at port", int(server_obj['port']))
+            httpd.serve_forever()
+    else:
+        print("Server started at:: http://%s:%s" % (configTree.getroot()[3].text, int(server_obj['port'])))
+        with MultipleRequestsHandler((configTree.getroot()[3].text, int(server_obj['port'])), http_handler) as httpd:
+            print("serving at port", int(server_obj['port']))
+            httpd.serve_forever()
+
+
+
