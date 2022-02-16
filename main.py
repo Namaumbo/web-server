@@ -1,7 +1,10 @@
+import cgi
+import logging
 import mimetypes
 import os
 import posixpath
 import socket
+import sys
 import threading
 import urllib
 from http import HTTPStatus
@@ -10,8 +13,6 @@ from configparser import ConfigParser
 from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
     case_directory_index_file
 from scripts.logsHandlers.LogsClass import Logs
-
-
 
 # opening html files stored in public_html
 with open(r'public_html/Error_logs.html') as f:
@@ -67,6 +68,19 @@ class http_handler(BaseHTTPRequestHandler):
         '.js': 'application/x-javascript',
         '': 'application/octet-stream',  # Default
     }
+
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
+        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
+                     str(self.path), str(self.headers), post_data.decode('utf-8'))
+        self._set_response()
+        self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
@@ -250,10 +264,11 @@ class MultipleRequestsHandler(HTTPServer):
 
 
 if __name__ == '__main__':
-    getting_interface_ip()
-    Port = 8000
+    # getting_interface_ip()
+    # Port = 8000
     print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
+    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
     with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
         print("serving at port", int(server_obj['port']))
+        logging.basicConfig(level=logging.INFO)
         httpd.serve_forever()
