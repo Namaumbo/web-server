@@ -13,11 +13,9 @@ from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_fi
 from scripts.logsHandlers.LogsClass import Logs
 import xml.etree.ElementTree as ET
 
-
 configTree = ET.parse("./configurations/config.xml")
 
 # getting user port to bind or else server will bind to all interfaces
-
 # Remove 1st argument from the which is the file name
 # list of command line arguments
 argumentList = sys.argv[1:]
@@ -25,12 +23,19 @@ argumentList = sys.argv[1:]
 short_options = "b:"
 # option to be entered in the terminal
 long_options = ["bind="]
+
 try:
+
+    # check this code
     arguments, values = getopt.getopt(argumentList, short_options, long_options)
     for currentArgument, currentValue in arguments:
         if currentArgument in ("-b", "--bind"):
             # from here <ip/> in XML will be overridden
-            print("bind ip is ", currentValue)
+            root_element = configTree.getroot()
+            for element in root_element.findall("ip"):
+                element.text = currentValue
+
+            configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
 
 except getopt.error as err:
     # output error, and return with an error code
@@ -273,8 +278,17 @@ class MultipleRequestsHandler(HTTPServer):
 
 
 if __name__ == '__main__':
-    getting_interface_ip()
-    print("Server started at:: http://%s:%s" % (str(server_obj["host_ip"]), int(server_obj['port'])))
-    with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
-        print("serving at port", int(server_obj['port']))
-        httpd.serve_forever()
+
+    if configTree.getroot()[3].text is None:
+        print("Server started on port:: http://{x.x.x.x}:%s" % int(server_obj['port']))
+        with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
+            print("serving at port", int(server_obj['port']))
+            httpd.serve_forever()
+    else:
+        print("Server started at:: http://%s:%s" % (configTree.getroot()[3].text, int(server_obj['port'])))
+        with MultipleRequestsHandler((configTree.getroot()[3].text, int(server_obj['port'])), http_handler) as httpd:
+            print("serving at port", int(server_obj['port']))
+            httpd.serve_forever()
+
+
+

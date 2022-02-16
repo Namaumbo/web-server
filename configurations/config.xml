@@ -1,22 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--Server Pools-->
-<!--Health check-->
-<!--High Availability-->
-<!--HTTP Protocol-->
-<!--Logging and Monitoring-->
-<!--Performance Tuning-->
-<!--SSL, TLS, and PKCS #11-->
-<!--Variables-->
-<!--Virtual Servers-->
+<?xml version='1.0' encoding='UTF-8'?>
 <serverConfiguration>
-    <httpEndpoint id="defaultHttpEndpoint"
-                  host="${env.HOST}"
-                  httpPort="8000"
-    />
-    <type>http</type>
-    <port>8000</port>
-<!--    if the user wishes to browser other folders and some subfolders will be redirected to index.html or index.php-->
-    <Directory host="/home"/>
+        <httpEndpoint id="defaultHttpEndpoint" host="${env.HOST}" httpPort="8000" />
+        <type>http</type>
+        <port>8000</port>
+<!--    the ip element will dynamically be allocated the ip if the user binds with any network \-->
+<!--    other wise the element tag will be empty-->
+        <ip></ip>
+        <Logging>
+            <errolog>
+                <filename>"./Logs/error.log"</filename>
+                <rollingsize>10M</rollingsize>
+                <debuglevel>0</debuglevel>
+                <loglevel>DEBUG</loglevel>
+            </errolog>
+            <accesslog>
+                <filename>"./Logs/access.log"</filename>
+                <rollingsize>10M</rollingsize>
+            </accesslog>
+            <serverlog>
+                <filename>"./Logs/server.log"</filename>
+                <rollingsize>10M</rollingsize>
+            </serverlog>
+        </Logging>
 
-    </serverConfiguration>
+
+
+
+
+
+     </serverConfiguration>
