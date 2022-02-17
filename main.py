@@ -1,4 +1,4 @@
-import cgi
+#!/usr/bin/env python3
 import logging
 import mimetypes
 import os
@@ -14,13 +14,68 @@ from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_fi
     case_directory_index_file
 from scripts.logsHandlers.LogsClass import Logs
 
-# opening html files stored in public_html
-with open(r'public_html/Error_logs.html') as f:
-    html_string_error = f.read()
+# # opening html files stored in public_html
+# with open(r'public_html/Error_logs.html') as f:
+#     html_string_error = f.read()
 
-# # opening the listings of a directory
-with open(r'public_html/Listing_page.html') as f:
-    html_string_listing = f.read()
+html_string_error = """
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error logs</title>
+
+</head>
+<body>
+   <h2
+        style="color:black;
+        font-family:Sans-serif;
+        text-align:center;
+        font-size:35px"
+        >Mandebvu Server Error log </h2>
+        <hr />
+        <br />
+       <h1>Error accessing {path}</h1>
+       <p>{msg}</p>
+</body>
+</html>
+"""
+
+# opening the listings of a directory
+# with open(r'public_html/Listing_page.html') as f:
+#     html_string_listing = f.read()
+
+html_string_listing = """
+    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<h2
+        style="
+        background-color : skyblue;
+        padding-left : 30px;
+        color:black;
+        font-family:Sans-serif;
+        text-align:center;
+        font-size:25px
+
+";
+
+>Here are the resources </h2>
+<h1> <b>for the listing of {path}  </b></h1>
+<hr/>
+<br/>
+<ul>
+  {0}
+</ul>
+</body>
+</html>
+    
+    
+    
+    """
 
 # variable
 Error_Page = html_string_error
@@ -31,10 +86,9 @@ Listing_Page = html_string_listing
 server_configuration = ConfigParser()
 server_configuration.read('./configurations/configurations.ini')
 
-# getting the sections from the config file
-server_obj = server_configuration["server_info"]
+# getting the sections from the config fil8000_configuration["server_info"]
 
-directory_obj = server_configuration["directories"]
+# directory_obj = server_configuration["directories"]
 
 
 # setting the ipaddress
@@ -267,8 +321,8 @@ if __name__ == '__main__':
     # getting_interface_ip()
     # Port = 8000
     print('server is stating.....')
-    print("Server started at:: http://%s:%s" % (str(server_obj["host"]), int(server_obj['port'])))
-    with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
-        print("serving at port", int(server_obj['port']))
+    # print("Server started at:: http://%s:%s" % ())
+    with MultipleRequestsHandler(("", 8000), http_handler) as httpd:
+        print("serving at port", 8000)
         logging.basicConfig(level=logging.INFO)
         httpd.serve_forever()
