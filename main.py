@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import mimetypes
 import os
 import getopt, sys
@@ -13,7 +15,7 @@ from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_fi
 from scripts.logsHandlers.LogsClass import Logs
 import xml.etree.ElementTree as ET
 
-configTree = ET.parse("./configurations/config.xml")
+configTree = ET.parse("configurations/config.xml")
 
 # getting user port to bind or else server will bind to all interfaces
 # Remove 1st argument from the which is the file name
@@ -23,6 +25,20 @@ argumentList = sys.argv[1:]
 short_options = "b:"
 # option to be entered in the terminal
 long_options = ["bind="]
+
+
+def access_log(self, *args, ):
+    # ip address - authentication - [date and time]
+    # "request from the client"[HTTP
+    # action, status, size_in_bytes
+    # identifier of the web browser]
+
+    f = open("Logs/access.log", "a")
+    f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0],
+                                                          self.date_time_string().split(",")[1],
+                                                          args[0], args[1], self.headers["User-Agent"]))
+    f.close()
+
 
 try:
 
@@ -64,12 +80,6 @@ server_obj = server_configuration["server_info"]
 directory_obj = server_configuration["directories"]
 
 
-# setting the ipaddress
-def getting_interface_ip():
-    interface_ip = socket.gethostbyname(socket.gethostname())
-    server_configuration.set("server_info", "host_ip", interface_ip)
-
-
 # THE START OF THE SERVER
 class http_handler(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
@@ -87,6 +97,7 @@ class http_handler(BaseHTTPRequestHandler):
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
         '.mp4': 'video/mpeg',
+        '.php': 'application/x-httpd-php',
         '.py': 'text/x-python-code',
         '.json': 'application/json',
         '.pdf': 'application/pdf',
@@ -98,8 +109,6 @@ class http_handler(BaseHTTPRequestHandler):
 
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
-
-        # cheking the ip
 
         try:
             # Figure out what exactly is being requested.
@@ -184,6 +193,7 @@ class http_handler(BaseHTTPRequestHandler):
             if extension in ["txt"]:
                 with open(full_path, 'r') as reader:
                     content = reader.read()
+
                     self.send_content(content)
                     # for some reason pdf works alone
             elif extension == "pdf":
@@ -239,6 +249,7 @@ class http_handler(BaseHTTPRequestHandler):
             self.wfile.write(content)
 
     def log_message(self, format: str, *args):
+        access_log(self, *args)
         Logs.server_log(self, *args)
 
 
@@ -289,6 +300,3 @@ if __name__ == '__main__':
         with MultipleRequestsHandler((configTree.getroot()[3].text, int(server_obj['port'])), http_handler) as httpd:
             print("serving at port", int(server_obj['port']))
             httpd.serve_forever()
-
-
-
