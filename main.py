@@ -208,7 +208,6 @@ class http_handler(BaseHTTPRequestHandler):
                 return None
             bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
                        not e.startswith('.')]
-
             # appending the listings to the listing html page
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
             # sending the contents
@@ -221,10 +220,8 @@ class http_handler(BaseHTTPRequestHandler):
 
     def handle_file(self, full_path):
         try:
-
             # check the path file extension to hand files differently
             extension = full_path.split(".")[1]
-
             if extension in ["txt"]:
                 with open(full_path, 'r') as reader:
                     content = reader.read()
