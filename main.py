@@ -6,10 +6,13 @@ import posixpath
 import socket
 import sys
 import threading
+import time
 import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from configparser import ConfigParser
+from logging.handlers import RotatingFileHandler
+
 from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
     case_directory_index_file
 from scripts.logsHandlers.LogsClass import Logs
@@ -31,7 +34,7 @@ html_string_error = """
         font-family:Sans-serif;
         text-align:center;
         font-size:35px"
-        >Mandebvu Server Error log </h2>
+        <Mandebvu Server Error log </h2>
         <hr />
         <br />
        <h1>Error accessing {path}</h1>
@@ -85,6 +88,7 @@ Listing_Page = html_string_listing
 # getting the configurations data
 server_configuration = ConfigParser()
 server_configuration.read('./configurations/configurations.ini')
+
 
 # getting the sections from the config fil8000_configuration["server_info"]
 
@@ -146,9 +150,9 @@ class http_handler(BaseHTTPRequestHandler):
             global msg
 
             # removing the white spaces
-            # self.full_path = os.getcwd() + self.path
+            self.full_path = os.getcwd() + self.path
 
-            self.full_path = directory_obj["directory_served"] + self.path
+            # self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
 
@@ -280,6 +284,7 @@ class http_handler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args):
         Logs.server_log(self, *args)
+        Logs.access_log(self, *args)
 
 
 # this class will allow multiple clients to be served at once
@@ -324,5 +329,6 @@ if __name__ == '__main__':
     # print("Server started at:: http://%s:%s" % ())
     with MultipleRequestsHandler(("", 8000), http_handler) as httpd:
         print("serving at port", 8000)
+
         logging.basicConfig(level=logging.INFO)
         httpd.serve_forever()
