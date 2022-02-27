@@ -33,8 +33,8 @@ class Logs:
         # action, status, size_in_bytes
         # identifier of the web browser]
 
-        f = open("Logs/access.log", "a")
+        f = open("/var/log/my-server-access.log", "a")
         f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0],
                                                               self.date_time_string().split(",")[1],
-                                                              args[1], args[2], self.headers["User-Agent"]))
+                                                              args[0], args[1], self.headers["User-Agent"]))
         f.close()

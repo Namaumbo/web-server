@@ -98,3 +98,10 @@
 127.0.0.1 - -[ 22 Feb 2022 01:32:16 GMT] - - "GET / HTTP/1.1" - - 200 - - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 
 127.0.0.1 - -[ 22 Feb 2022 01:32:16 GMT] - - "GET /favicon.ico HTTP/1.1" - - 404 - - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 
 127.0.0.1 - -[ 22 Feb 2022 01:32:19 GMT] - - "GET / HTTP/1.1" - - 200 - - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 
+127.0.0.1 - -[ 25 Feb 2022 23:45:41 GMT] - - "GET / HTTP/1.1" - - 404 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 25 Feb 2022 23:47:38 GMT] - - "GET / HTTP/1.1" - - 200 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 25 Feb 2022 23:58:37 GMT] - - "GET /scripts HTTP/1.1" - - 301 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 25 Feb 2022 23:58:37 GMT] - - "GET /scripts/ HTTP/1.1" - - 200 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 25 Feb 2022 23:58:42 GMT] - - "GET /photo.png HTTP/1.1" - - 200 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 26 Feb 2022 00:03:18 GMT] - - "GET / HTTP/1.1" - - 200 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
+127.0.0.1 - -[ 26 Feb 2022 00:03:18 GMT] - - "GET /favicon.ico HTTP/1.1" - - 404 - - Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0 
