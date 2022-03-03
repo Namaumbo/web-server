@@ -3,8 +3,6 @@
         <httpEndpoint id="defaultHttpEndpoint" host="${env.HOST}" httpPort="8000" />
         <type>http</type>
         <port>8000</port>
-<!--    the ip element will dynamically be allocated the ip if the user binds with any network \-->
-<!--    other wise the element tag will be empty-->
         <ip></ip>
         <Logging>
             <errolog>
@@ -22,10 +20,12 @@
                 <rollingsize>10M</rollingsize>
             </serverlog>
         </Logging>
-
-
-
-
+<!--        <Directory '/user/www'>-->
+<!--           AllowOverride None-->
+<!--           Options ExecCGI-->
+<!--           Order allow,deny-->
+<!--           Allow from all-->
+<!--        </Directory>-->
 
 
      </serverConfiguration>

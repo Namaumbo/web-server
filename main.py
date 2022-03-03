@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import mimetypes
 import os
 import getopt, sys
@@ -7,13 +9,14 @@ import threading
 import urllib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from configparser import ConfigParser
+
 from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
     case_directory_index_file
 from scripts.logsHandlers.LogsClass import Logs
 import xml.etree.ElementTree as ET
 
-configTree = ET.parse("./configurations/config.xml")
+#
+# configTree = ET.parse("configurations/config.xml")
 
 # getting user port to bind or else server will bind to all interfaces
 # Remove 1st argument from the which is the file name
@@ -24,50 +27,99 @@ short_options = "b:"
 # option to be entered in the terminal
 long_options = ["bind="]
 
-try:
+# def access_log(self, *args, ):
+# ip address - authentication - [date and time]
+# "request from the client"[HTTP
+# action, status, size_in_bytes
+# identifier of the web browser]
 
-    # check this code
-    arguments, values = getopt.getopt(argumentList, short_options, long_options)
-    for currentArgument, currentValue in arguments:
-        if currentArgument in ("-b", "--bind"):
-            # from here <ip/> in XML will be overridden
-            root_element = configTree.getroot()
-            for element in root_element.findall("ip"):
-                element.text = currentValue
+# f = open("Logs/access.log", "a")
+# f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0],
+#    self.date_time_string().split(",")[1],
+#   args[0], args[1], self.headers["User-Agent"]))
+# f.close()
 
-            configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
 
-except getopt.error as err:
-    # output error, and return with an error code
-    sys.stdout.write(str(err))
+# try:
+
+# check this code
+#  arguments, values = getopt.getopt(argumentList, short_options, long_options)
+# for currentArgument, currentValue in arguments:
+#   if currentArgument in ("-b", "--bind"):
+#       # from here <ip/> in XML will be overridden
+# root_element = configTree.getroot()
+#  for element in root_element.findall("ip"):
+#    element.text = currentValue
+
+##  configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
+
+# except getopt.error as err:
+# output error, and return with an error code
+#   sys.stdout.write(str(err))
 
 # opening html files stored in public_html
-with open(r'public_html/Error_logs.html') as f:
-    html_string_error = f.read()
+# with open(r'public_html/Error_logs.html') as f:
+#  = f.read()
+html_string_error = """"<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error logs</title>
+
+</head>
+<body>
+   <h2
+        style="color:black;
+        font-family:Sans-serif;
+        text-align:center;
+        font-size:35px"
+        >Mandebvu Server Error log </h2>
+        <hr />
+        <br />
+       <h1>Error accessing {path}</h1>
+       <p>{msg}</p>
+</body>"""
 
 # # opening the listings of a directory
-with open(r'public_html/Listing_page.html') as f:
-    html_string_listing = f.read()
+# with open(r'public_html/Listing_page.html') as f:
+#  = f.read()
+html_string_listing = """
 
+<body>
+<h2
+        style="
+        background-color : skyblue;
+        padding-left : 30px;
+        color:black;
+        font-family:Sans-serif;
+        text-align:center;
+        font-size:25px
+
+";
+
+>Here are the resources </h2>
+<h1> <b>for the listing of {path}  </b></h1>
+<hr/>
+<br/>
+<ul>
+  {0}
+</ul>
+</body>
+ """
 # variable
 Error_Page = html_string_error
 
 # html for listing the current directory listings
 Listing_Page = html_string_listing
+
+
 # getting the configurations data
-server_configuration = ConfigParser()
-server_configuration.read('./configurations/configurations.ini')
+# server_configuration = ConfigParser()
+# server_configuration.read('./configurations/configurations.ini')
 
 # getting the sections from the config file
-server_obj = server_configuration["server_info"]
+# server_obj = server_configuration["server_info"]
 
-directory_obj = server_configuration["directories"]
-
-
-# setting the ipaddress
-def getting_interface_ip():
-    interface_ip = socket.gethostbyname(socket.gethostname())
-    server_configuration.set("server_info", "host_ip", interface_ip)
+# directory_obj = server_configuration["directories"]
 
 
 # THE START OF THE SERVER
@@ -87,6 +139,7 @@ class http_handler(BaseHTTPRequestHandler):
         '.svg': 'image/svg+xml',
         '.css': 'text/css',
         '.mp4': 'video/mpeg',
+        '.php': 'application/x-httpd-php',
         '.py': 'text/x-python-code',
         '.json': 'application/json',
         '.pdf': 'application/pdf',
@@ -99,16 +152,14 @@ class http_handler(BaseHTTPRequestHandler):
     # overridden function provided by the BaseHTTPRequestHandler
     def do_GET(self):
 
-        # cheking the ip
-
         try:
             # Figure out what exactly is being requested.
             global msg
 
             # removing the white spaces
-            # self.full_path = os.getcwd() + self.path
+            self.full_path = os.getcwd() + self.path
 
-            self.full_path = directory_obj["directory_served"] + self.path
+            # self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
 
@@ -180,13 +231,7 @@ class http_handler(BaseHTTPRequestHandler):
 
             # check the path file extension to hand files differently
             extension = full_path.split(".")[1]
-
-            if extension in ["txt"]:
-                with open(full_path, 'r') as reader:
-                    content = reader.read()
-                    self.send_content(content)
-                    # for some reason pdf works alone
-            elif extension == "pdf":
+            if extension == "pdf":
                 pdf_file = open(full_path, 'rb')
                 st = os.fstat(pdf_file.fileno())
                 length = st.st_size
@@ -208,7 +253,7 @@ class http_handler(BaseHTTPRequestHandler):
                     st = os.fstat(file.fileno())
                     length = st.st_size
                     data = file.read()
-                    self.send_response(200)
+                    self.send_response(HTTPStatus.OK)
                     self.send_header('Content-type', mime_type[1])
                     self.send_header('Content-Length', str(length))
                     self.send_header('Keep-Alive', 'timeout=5, max=100')
@@ -216,8 +261,6 @@ class http_handler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(data)
                     file.close()
-
-
                 except IOError:
                     self.log_error('File Not Found: %s' % self.path, 404)
         except IOError as msg:
@@ -239,7 +282,12 @@ class http_handler(BaseHTTPRequestHandler):
             self.wfile.write(content)
 
     def log_message(self, format: str, *args):
-        Logs.server_log(self, *args)
+        Logs.access_log(self, *args)
+        # Logs.server_log(self, *args)
+        sys.stdout.write("client : {} | port : {} | http request :{}, status :{} \n".format(self.client_address[0],
+                                                                                            self.client_address[1],
+                                                                                            args[0],
+                                                                                            args[1]))
 
 
 # this class will allow multiple clients to be served at once
@@ -278,17 +326,13 @@ class MultipleRequestsHandler(HTTPServer):
 
 
 if __name__ == '__main__':
-
-    if configTree.getroot()[3].text is None:
-        print("Server started on port:: http://{x.x.x.x}:%s" % int(server_obj['port']))
-        with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
-            print("serving at port", int(server_obj['port']))
-            httpd.serve_forever()
-    else:
-        print("Server started at:: http://%s:%s" % (configTree.getroot()[3].text, int(server_obj['port'])))
-        with MultipleRequestsHandler((configTree.getroot()[3].text, int(server_obj['port'])), http_handler) as httpd:
-            print("serving at port", int(server_obj['port']))
-            httpd.serve_forever()
-
-
-
+    # if configTree.getroot()[3].text is None:
+    #    print("Server started on port:: http://{x.x.x.x}:%s" % int(server_obj['port']))
+    #   with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
+    #    print("serving at port", int(server_obj['port']))
+    #  httpd.serve_forever()
+    # else:
+    # print("Server started at:: http://%s:%s" % "localhost", 5000)
+    with MultipleRequestsHandler(("", 5000), http_handler) as httpd:
+        # print("serving at port", int(server_obj['port']))
+        httpd.serve_forever()
