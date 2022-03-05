@@ -31,13 +31,21 @@ for you to run th server as a service on linuc you have to create a service file
  
  
  then you have to start the service through the following command in a sudo mode
+ 
                systemctl start <yourservicefile>.service
  
 if you want to change the configuration files due to post changes you have to use the following command
+ 
  `             systemctl stop <yourservicefile>.service
+ 
 then after changing the service file you have to reload  the daemon setting and restart the services as follows
+ 
                systemctl daemon-reload
+ 
                systemctl start <yourservicefile>.service
+ 
                systemctl status <yourservicefile>.service {to check the running status of the service}
+ 
 for you to get a sticking service that is to restart it after the computer restarts then
+ 
                systemctl enable <yourservicefile>.service
