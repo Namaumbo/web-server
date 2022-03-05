@@ -1,6 +1,13 @@
 from http.server import HTTPServer
 
 
+<<<<<<< HEAD
+=======
+# this class will allow multiple clients to be served at once
+from duplicity.asyncscheduler import threading
+
+
+>>>>>>> 5a25586ce1e8a4484118d5d4f3c20150f736455f
 class MultipleRequestsHandler(HTTPServer):
     """Mix-in class to handle each request in a new thread."""
 
