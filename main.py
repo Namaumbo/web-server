@@ -1,47 +1,18 @@
 #!/usr/bin/env python
-
+import configparser
 import mimetypes
 import os
-import getopt, sys
 import posixpath
-import socket
-import threading
 import urllib
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
+from scripts.MultipleRequestHandler import MultipleRequestsHandler
+# from scripts.BaseHTTPRequestHandler import BaseRequestsHandler
 
-from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_always_fail, \
-    case_directory_index_file
-from scripts.logsHandlers.LogsClass import Logs
-import xml.etree.ElementTree as ET
 
-#
 # configTree = ET.parse("configurations/config.xml")
 
-# getting user port to bind or else server will bind to all interfaces
-# Remove 1st argument from the which is the file name
-# list of command line arguments
-argumentList = sys.argv[1:]
-
-short_options = "b:"
-# option to be entered in the terminal
-long_options = ["bind="]
-
-# def access_log(self, *args, ):
-# ip address - authentication - [date and time]
-# "request from the client"[HTTP
-# action, status, size_in_bytes
-# identifier of the web browser]
-
-# f = open("Logs/access.log", "a")
-# f.write('{} - -[{}] - - "{}" - - {} - - {} \n'.format(self.client_address[0],
-#    self.date_time_string().split(",")[1],
-#   args[0], args[1], self.headers["User-Agent"]))
-# f.close()
-
-
 # try:
-
 # check this code
 #  arguments, values = getopt.getopt(argumentList, short_options, long_options)
 # for currentArgument, currentValue in arguments:
@@ -50,17 +21,16 @@ long_options = ["bind="]
 # root_element = configTree.getroot()
 #  for element in root_element.findall("ip"):
 #    element.text = currentValue
+#  configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
 
-##  configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
 
-# except getopt.error as err:
-# output error, and return with an error code
-#   sys.stdout.write(str(err))
+# THE START OF THE SERVER
+from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_directory_index_file, \
+    case_always_fail
+from scripts.logsHandlers.LogsClass import Logs
 
-# opening html files stored in public_html
-# with open(r'public_html/Error_logs.html') as f:
-#  = f.read()
-html_string_error = """"<html lang="en">
+html_string_error = """"
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Error logs</title>
@@ -71,17 +41,15 @@ html_string_error = """"<html lang="en">
         style="color:black;
         font-family:Sans-serif;
         text-align:center;
-        font-size:35px"
-        >Mandebvu Server Error log </h2>
+        font-size:35px;
+        color:red
+        "
+        > Error Response log </h2>
         <hr />
         <br />
        <h1>Error accessing {path}</h1>
-       <p>{msg}</p>
+       <p>{message}</p>
 </body>"""
-
-# # opening the listings of a directory
-# with open(r'public_html/Listing_page.html') as f:
-#  = f.read()
 html_string_listing = """
 
 <body>
@@ -105,31 +73,23 @@ html_string_listing = """
 </ul>
 </body>
  """
-# variable
+# html for error listing
 Error_Page = html_string_error
-
 # html for listing the current directory listings
 Listing_Page = html_string_listing
 
-
-# getting the configurations data
-# server_configuration = ConfigParser()
-# server_configuration.read('./configurations/configurations.ini')
-
-# getting the sections from the config file
-# server_obj = server_configuration["server_info"]
-
-# directory_obj = server_configuration["directories"]
+# reading the configuration file from the operating system
+config = configparser.ConfigParser()
+config.read('/etc/myConfigfiles/myServer.ini')
+PORT = config.get('Server_info', 'PORT')
+IP = config.get('Server_info', 'IP')
 
 
-# THE START OF THE SERVER
-class http_handler(BaseHTTPRequestHandler):
+class Main(BaseHTTPRequestHandler):
     Cases = [case_no_file(),
              case_existing_file(),
              case_directory_index_file(),
              case_always_fail()]
-
-    # mimetypes
     extensions_map = {
         '.manifest': 'text/cache-manifest',
         '.html': 'text/html',
@@ -149,33 +109,26 @@ class http_handler(BaseHTTPRequestHandler):
         '': 'application/octet-stream',  # Default
     }
 
-    # overridden function provided by the BaseHTTPRequestHandler
+    # overridden function provided by the BaseHTTPRequestHandle
     def do_GET(self):
-
         try:
             # Figure out what exactly is being requested.
-            global msg
-
             # removing the white spaces
             self.full_path = os.getcwd() + self.path
-
             # self.full_path = directory_obj["directory_served"] + self.path
             # split the path by the spaces given as %20 by default
             full_path = self.full_path.split("%20")
-
             # then join the list of path parts by space
             self.full_path = " ".join(full_path)
-
             # Figure out how to handle it.s
             for case in self.Cases:
                 handler = case
                 if handler.test(self):
                     handler.act(self)
                     break
-
         # Handle errors.
-        except Exception as msg:
-            self.handle_error(msg)
+        except Exception as message:
+            self.handle_error(message)
 
     # getting the mime type
     def get_mimetype(self, content):
@@ -192,18 +145,18 @@ class http_handler(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-    def handle_error(self, msg):
-
-        content = Error_Page.format(path=self.path, msg=msg)
+    # handling error
+    def handle_error(self, error_message):
+        content = Error_Page.format(path=self.path, message=error_message)
         self.send_content(content, 404)
 
+    # listing all directories
     def list_dir(self, full_path):
         try:
             # listing everything in that directory
             entries = os.listdir(full_path)
             # parsing the url
             display_path = urllib.parse.unquote(self.path, errors='surrogates')
-
             # this will append the url with / for it not to redirect
             if not self.path.endswith('/'):
                 # status  A browser redirects to the new URL and search
@@ -215,20 +168,17 @@ class http_handler(BaseHTTPRequestHandler):
                 return None
             bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
                        not e.startswith('.')]
-
             # appending the listings to the listing html page
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
             # sending the contents
             self.send_content(page)
-        except OSError as msg:
-            msg = "'{0}' cannot be listed: {1}".format(self.path, msg)
-            self.handle_error(msg)
+        except OSError as error_message:
+            error_message = "'{0}' cannot be listed: {1}".format(self.path, error_message)
+            self.handle_error(error_message)
 
-        # this will check what mime is asked for by the client. and return the mime type
-
+    # this will check what mime is asked for by the client. and return the mime type
     def handle_file(self, full_path):
         try:
-
             # check the path file extension to hand files differently
             extension = full_path.split(".")[1]
             if extension == "pdf":
@@ -244,7 +194,6 @@ class http_handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(data)
                 pdf_file.close()
-
             else:
                 try:
                     # using manual opening and reading until all the bytes are read
@@ -263,9 +212,9 @@ class http_handler(BaseHTTPRequestHandler):
                     file.close()
                 except IOError:
                     self.log_error('File Not Found: %s' % self.path, 404)
-        except IOError as msg:
-            msg = "'{0}' cannot be read: {1}".format(self.path, msg)
-            self.handle_error(msg)
+        except IOError as io_error:
+            msg = "'{0}' cannot be read: {1}".format(self.path, io_error)
+            self.handle_error(io_error)
 
     # serving different types of contents
     def send_content(self, content, status=200):
@@ -281,58 +230,17 @@ class http_handler(BaseHTTPRequestHandler):
         else:
             self.wfile.write(content)
 
+    # messages logs
     def log_message(self, format: str, *args):
         Logs.access_log(self, *args)
-        # Logs.server_log(self, *args)
-        sys.stdout.write("client : {} | port : {} | http request :{}, status :{} \n".format(self.client_address[0],
-                                                                                            self.client_address[1],
-                                                                                            args[0],
-                                                                                            args[1]))
-
-
-# this class will allow multiple clients to be served at once
-class MultipleRequestsHandler(HTTPServer):
-    """Mix-in class to handle each request in a new thread."""
-
-    # Decides how threads will act upon termination of the
-    # main process
-    daemon_threads = False
-    # If true, server_close() waits until all non-daemonic threads terminate.
-    block_on_close = True
-    # For non-daemonic threads, list of threading.Threading objects
-    # used by server_close() to wait for all threads completion.
-    _threads = None
-
-    def process_request_thread(self, request, client_address):
-        """Same as in BaseServer but as a thread.
-        """
-        try:
-            self.finish_request(request, client_address)
-        except Exception:
-            self.handle_error(request, client_address)
-        finally:
-            self.shutdown_request(request)
-
-    def process_request(self, request, client_address):
-        """Start a new thread to process the request."""
-        t = threading.Thread(target=self.process_request_thread,
-                             args=(request, client_address))
-        t.daemon = self.daemon_threads
-        if not t.daemon and self.block_on_close:
-            if self._threads is None:
-                self._threads = []
-            self._threads.append(t)
-        t.start()
+        Logs.server_log(self, *args)
 
 
 if __name__ == '__main__':
-    # if configTree.getroot()[3].text is None:
-    #    print("Server started on port:: http://{x.x.x.x}:%s" % int(server_obj['port']))
-    #   with MultipleRequestsHandler(("", int(server_obj['port'])), http_handler) as httpd:
-    #    print("serving at port", int(server_obj['port']))
-    #  httpd.serve_forever()
-    # else:
-    # print("Server started at:: http://%s:%s" % "localhost", 5000)
-    with MultipleRequestsHandler(("", 5000), http_handler) as httpd:
-        # print("serving at port", int(server_obj['port']))
+    global ip_address
+    if IP is None:
+        ip_address = ""
+    else:
+        ip_address = IP
+    with MultipleRequestsHandler((str(ip_address), int(PORT)), Main) as httpd:
         httpd.serve_forever()
