@@ -12,6 +12,7 @@
 for you to run th server as a service on linuc you have to create a service file in this path  /etc/systemd/system/<yourservicefile>.service next you hvae to include some info on the file as follows:
  
  //////////////// using vim for editing or nano in linux//////////////////////////////
+ 
 [unit]
  After=multi-user.target
  
@@ -21,6 +22,7 @@ for you to run th server as a service on linuc you have to create a service file
  
 [install]
  WantedBy=multi-user.target
+ 
  //////////////////////////////end of file/////////////////////////////////////////////
  
  
