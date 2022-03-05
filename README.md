@@ -12,20 +12,20 @@
 for you to run th server as a service on linuc you have to create a service file in this path  /etc/systemd/system/<yourservicefile>.service next you hvae to include some info on the file as follows:
  
  //////////////// using vim for editing or nano in linux//////////////////////////////
- 
-[unit]
- 
- After=multi-user.target
- 
-[service]
- 
- Type=exec
- 
- ExecStart=/user/bin/python3 /<pathofthescript>/<script>.py
- 
-[install]
- 
- WantedBy=multi-user.target
+
+               [unit]
+
+               After=multi-user.target
+
+               [service]
+
+               Type=exec
+
+               ExecStart=/user/bin/python3 /<pathofthescript>/<script>.py
+
+               [install]
+
+               WantedBy=multi-user.target
  
  //////////////////////////////end of file/////////////////////////////////////////////
  
@@ -36,7 +36,7 @@ for you to run th server as a service on linuc you have to create a service file
  
 if you want to change the configuration files due to post changes you have to use the following command
  
- `             systemctl stop <yourservicefile>.service
+               systemctl stop <yourservicefile>.service
  
 then after changing the service file you have to reload  the daemon setting and restart the services as follows
  
