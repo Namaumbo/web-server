@@ -14,13 +14,17 @@ for you to run th server as a service on linuc you have to create a service file
  //////////////// using vim for editing or nano in linux//////////////////////////////
  
 [unit]
+ 
  After=multi-user.target
  
 [service]
+ 
  Type=exec
+ 
  ExecStart=/user/bin/python3 /<pathofthescript>/<script>.py
  
 [install]
+ 
  WantedBy=multi-user.target
  
  //////////////////////////////end of file/////////////////////////////////////////////
