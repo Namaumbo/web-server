@@ -8,44 +8,22 @@
  5. click the url in the console log.
  6. you have a working server serving files the server resides waiting for clients' requests
 
-# Service Running in linux
-for you to run th server as a service on linuc you have to create a service file in this path  /etc/systemd/system/<yourservicefile>.service next you hvae to include some info on the file as follows:
- 
- //////////////// using vim for editing or nano in linux//////////////////////////////
-
-               [unit]
-
-               After=multi-user.target
-
-               [service]
-
-               Type=exec
-
-               ExecStart=/user/bin/python3 /<pathofthescript>/<script>.py
-
-               [install]
-
-               WantedBy=multi-user.target
- 
- //////////////////////////////end of file/////////////////////////////////////////////
- 
- 
- then you have to start the service through the following command in a sudo mode
- 
-               systemctl start <yourservicefile>.service
- 
-if you want to change the configuration files due to post changes you have to use the following command
- 
-               systemctl stop <yourservicefile>.service
- 
-then after changing the service file you have to reload  the daemon setting and restart the services as follows
- 
-               systemctl daemon-reload
- 
-               systemctl start <yourservicefile>.service
- 
-               systemctl status <yourservicefile>.service {to check the running status of the service}
- 
-for you to get a sticking service that is to restart it after the computer restarts then
- 
-               systemctl enable <yourservicefile>.service
+#Running a Server as a Service In linux
+	1.find a .service file in the clone folder
+	2.open the file with any editor to the change the path of the script
+		->add your script path on the line below in the .service file
+			->ExecStart=/user/bin/python3 /<pathofthescript>/main.py
+		
+	3.copy the file into /etc/systemd/system
+	4.On terminal do the following commands
+		->systemctl daemon-reload  --to update the changes 	
+		->systemctl start <servicename> --to start your service
+		->sytemctl status <servicename> --to check the status of your service
+		
+	5.For a service to run automatically even when you reboot your PC do
+	
+		->systemctl enable <servicename>
+		
+	6.And finally stop the service anytime by running the command below
+		->systemctl stop <servicename>
+			
