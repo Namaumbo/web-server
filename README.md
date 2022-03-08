@@ -8,13 +8,18 @@
  5. click the url in the console log.
  6. you have a working server serving files the server resides waiting for clients' requests
 
-#Running a Server as a Service In linux
+# Running a Server as a Service In linux
+
 	1.find a .service file in the clone folder
+	
 	2.open the file with any editor to the change the path of the script
+	
 		->add your script path on the line below in the .service file
-			->ExecStart=/user/bin/python3 /<pathofthescript>/main.py
+		
+		->ExecStart=/user/bin/python3 /<pathofthescript>/main.py
 		
 	3.copy the file into /etc/systemd/system
+	
 	4.On terminal do the following commands
 		->systemctl daemon-reload  --to update the changes 	
 		->systemctl start <servicename> --to start your service
