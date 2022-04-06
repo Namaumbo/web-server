@@ -324,8 +324,8 @@ if __name__ == '__main__':
     # Port = 8000
     print('server is stating.....')
     # print("Server started at:: http://%s:%s" % ())
-    with MultipleRequestsHandler(("", 8000), http_handler) as httpd:
-        print("serving at port", 8000)
+    with MultipleRequestsHandler(("", 8070), http_handler) as httpd:
+        print("serving at port", 8070)
 
         logging.basicConfig(level=logging.INFO)
         httpd.serve_forever()
