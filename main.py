@@ -1,61 +1,53 @@
 #!/usr/bin/env python
 import configparser
+import io
 import mimetypes
 import os
 import posixpath
-import urllib
+import shutil
+import sys
+import urllib.parse
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
+from scripts.logsHandlers.LogsClass import Logs
 from scripts.MultipleRequestHandler import MultipleRequestsHandler
-# from scripts.BaseHTTPRequestHandler import BaseRequestsHandler
-
-
-# configTree = ET.parse("configurations/config.xml")
-
-# try:
-# check this code
-#  arguments, values = getopt.getopt(argumentList, short_options, long_options)
-# for currentArgument, currentValue in arguments:
-#   if currentArgument in ("-b", "--bind"):
-#       # from here <ip/> in XML will be overridden
-# root_element = configTree.getroot()
-#  for element in root_element.findall("ip"):
-#    element.text = currentValue
-#  configTree.write(r"./configurations/config.xml", encoding='UTF-8', xml_declaration=True)
-
 
 # THE START OF THE SERVER
-from scripts.fileHandlers.FileHandlerCases import case_no_file, case_existing_file, case_directory_index_file, \
-    case_always_fail
-from scripts.logsHandlers.LogsClass import Logs
 
-html_string_error = """"
+html_string_error = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Error logs</title>
+    <title>Error response</title>
 
 </head>
 <body>
    <h2
-        style="color:black;
+        style="background-color:tomato;
         font-family:Sans-serif;
         text-align:center;
-        font-size:35px;
-        color:red
-        "
-        > Error Response log </h2>
+        font-size:30px;
+        color:white">
+         Error Response log 
+   </h2>
         <hr />
         <br />
        <h1>Error accessing {path}</h1>
        <p>{message}</p>
-</body>"""
+</body>
+"""
 html_string_listing = """
 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>root index</title>
+
+</head>
 <body>
 <h2
         style="
-        background-color : skyblue;
+        background-color :lightgreen;
         padding-left : 30px;
         color:black;
         font-family:Sans-serif;
@@ -65,7 +57,7 @@ html_string_listing = """
 ";
 
 >Here are the resources </h2>
-<h1> <b>for the listing of {path}  </b></h1>
+<h2><b>for the listing of {path}</b></h2>
 <hr/>
 <br/>
 <ul>
@@ -77,19 +69,43 @@ html_string_listing = """
 Error_Page = html_string_error
 # html for listing the current directory listings
 Listing_Page = html_string_listing
-
 # reading the configuration file from the operating system
 config = configparser.ConfigParser()
 config.read('/etc/myConfigfiles/myServer.ini')
 PORT = config.get('Server_info', 'PORT')
 IP = config.get('Server_info', 'IP')
 
+DIRECTORIES = config.get('dir', 'DIRECTORIES')
 
-class Main(BaseHTTPRequestHandler):
-    Cases = [case_no_file(),
-             case_existing_file(),
-             case_directory_index_file(),
-             case_always_fail()]
+# edulab details
+edulab_directory = config.get('edulabWebsite', 'DocumentRoot')
+edulab_app_name = config.get('edulabWebsite', 'ServerName')
+edulab_app_name_alias = config.get('edulabWebsite', 'aliasServerName')
+
+# hangover details
+hangover_directory = config.get('hangoverWebsite', 'DocumentRoot')
+hangover_app_name = config.get('hangoverWebsite', 'ServerName')
+hangover_app_name_alias = config.get('hangoverWebsite', 'aliasServerName')
+
+DEFAULT_ERROR_MESSAGE = """\
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: %(code)d</p>
+        <p>Message: %(message)s.</p>
+        <p>Error code explanation: %(code)s - %(explain)s.</p>
+    </body>
+</html>
+"""
+
+
+class main(BaseHTTPRequestHandler):
     extensions_map = {
         '.manifest': 'text/cache-manifest',
         '.html': 'text/html',
@@ -109,131 +125,134 @@ class Main(BaseHTTPRequestHandler):
         '': 'application/octet-stream',  # Default
     }
 
-    # overridden function provided by the BaseHTTPRequestHandle
-    def do_GET(self):
-        try:
-            # Figure out what exactly is being requested.
-            # removing the white spaces
-            self.full_path = os.getcwd() + self.path
-            # self.full_path = directory_obj["directory_served"] + self.path
-            # split the path by the spaces given as %20 by default
-            full_path = self.full_path.split("%20")
-            # then join the list of path parts by space
-            self.full_path = " ".join(full_path)
-            # Figure out how to handle it.s
-            for case in self.Cases:
-                handler = case
-                if handler.test(self):
-                    handler.act(self)
-                    break
-        # Handle errors.
-        except Exception as message:
-            self.handle_error(message)
+    def __init__(self, *args, directory=None, **kwargs):
+        # if directory is None:
+        #     directory = os.getcwd()
+        # self.directory = os.fspath(directory)
+        super().__init__(*args, **kwargs)
+        self.full_path = None
 
-    # getting the mime type
-    def get_mimetype(self, content):
-        base, ext = posixpath.splitext(self.path)
+    def do_GET(self):
+        # this function will serve the simple get request
+        f = self.send_head()
+        if f:
+            try:
+                self.copyfile(f, self.wfile)
+            finally:
+                f.close()
+
+    def send_head(self):
+        # path = self.translate_path(self.path)
+        self.full_path = DIRECTORIES + self.path
+        # not working kaye
+        if os.path.isdir(self.full_path):
+            for index in "index.html", "index.htm":
+                index = os.path.join(self.full_path, index)
+                if os.path.exists(index):
+                    self.full_path = index
+                    break
+            else:
+                return self.list_directory(self.full_path)
+        mime_type = self.guess_type(self.path)
+        if self.full_path.endswith("/"):
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            return None
+        try:
+            f = open(self.full_path, 'rb')
+        except OSError:
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            return None
+        try:
+            fs = os.fstat(f.fileno())
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-type", mime_type)
+            self.send_header("Content-Length", str(fs[6]))
+            self.end_headers()
+            return f
+        except:
+            f.close()
+            raise
+
+    def list_directory(self, full_path):
+        try:
+
+            entries = os.listdir(full_path)
+            display_path = urllib.parse.unquote(self.path, errors='surrogates')
+
+            if not self.path.endswith('/'):
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header('Location', self.path + "/")
+                self.end_headers()
+                return None
+
+            enc = sys.getfilesystemencoding()
+            bullets = ['<li><a href="{0}">{0}</a></li>'.format(e) \
+                       for e in entries if not e.startswith('.')]
+
+            page = Listing_Page.format('\n'.join(bullets), path=display_path)
+            f = io.BytesIO()
+            f.write(page.encode(encoding="utf-8"), )
+            f.seek(0)
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-type", "text/html; charset=%s" % enc)
+            self.send_header("Content-Length", str(len(page)))
+            self.end_headers()
+            return f
+        except OSError:
+            self.send_error(
+                HTTPStatus.NOT_FOUND,
+                "No permission to list directory")
+            return None
+
+    def translate_path(self, path):
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
+
+        trailing_slash = path.rstrip().endswith('/')
+        try:
+            path = urllib.parse.unquote(path)
+        except UnicodeDecodeError as message:
+            self.send_content(message, 404)
+
+        path = posixpath.normpath(path)
+        words = path.split('/')
+
+        path = self.directory
+        for word in words:
+            if os.path.dirname(word) or word in (os.curdir, os.pardir):
+                continue
+            path = os.path.join(path, word)
+        if trailing_slash:
+            path += '/'
+        return path
+
+    # def log_message(self, format: str, *args):
+    #     Logs.access_log(self, *args)
+    #     Logs.server_log(self, *args)
+
+    def copyfile(self, source, out_put_file):
+        shutil.copyfileobj(source, out_put_file)
+
+    def guess_type(self, path):
+
+        base, ext = posixpath.splitext(path)
         if ext in self.extensions_map:
-            # return extension
             return self.extensions_map[ext]
-        # lowercase extensions
         ext = ext.lower()
         if ext in self.extensions_map:
             return self.extensions_map[ext]
-        guess, _ = mimetypes.guess_type(self.path)
+        guess, _ = mimetypes.guess_type(path)
         if guess:
             return guess
         return 'application/octet-stream'
 
-    # handling error
-    def handle_error(self, error_message):
-        content = Error_Page.format(path=self.path, message=error_message)
-        self.send_content(content, 404)
-
-    # listing all directories
-    def list_dir(self, full_path):
-        try:
-            # listing everything in that directory
-            entries = os.listdir(full_path)
-            # parsing the url
-            display_path = urllib.parse.unquote(self.path, errors='surrogates')
-            # this will append the url with / for it not to redirect
-            if not self.path.endswith('/'):
-                # status  A browser redirects to the new URL and search
-                # engines update their links to the resource
-                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                # then the header will Notify the location
-                self.send_header("Location", self.path + "/")
-                self.end_headers()
-                return None
-            bullets = ['<li> <a href="{0}">{0}</a></li>'.format(e) for e in entries if
-                       not e.startswith('.')]
-            # appending the listings to the listing html page
-            page = Listing_Page.format('\n'.join(bullets), path=display_path)
-            # sending the contents
-            self.send_content(page)
-        except OSError as error_message:
-            error_message = "'{0}' cannot be listed: {1}".format(self.path, error_message)
-            self.handle_error(error_message)
-
-    # this will check what mime is asked for by the client. and return the mime type
-    def handle_file(self, full_path):
-        try:
-            # check the path file extension to hand files differently
-            extension = full_path.split(".")[1]
-            if extension == "pdf":
-                pdf_file = open(full_path, 'rb')
-                st = os.fstat(pdf_file.fileno())
-                length = st.st_size
-                data = pdf_file.read()
-                self.send_response(HTTPStatus.OK)
-                self.send_header('Content-type', 'application/pdf')
-                self.send_header('Content-length', str(length))
-                self.send_header('Keep-Alive', 'timeout=5 ,max=100')
-                self.send_header('Accept-Ranges', 'bytes')
-                self.end_headers()
-                self.wfile.write(data)
-                pdf_file.close()
-            else:
-                try:
-                    # using manual opening and reading until all the bytes are read
-                    file = open(full_path, 'rb')
-                    mime_type = self.get_mimetype(file)
-                    st = os.fstat(file.fileno())
-                    length = st.st_size
-                    data = file.read()
-                    self.send_response(HTTPStatus.OK)
-                    self.send_header('Content-type', mime_type[1])
-                    self.send_header('Content-Length', str(length))
-                    self.send_header('Keep-Alive', 'timeout=5, max=100')
-                    self.send_header('Accept-Ranges', 'bytes')
-                    self.end_headers()
-                    self.wfile.write(data)
-                    file.close()
-                except IOError:
-                    self.log_error('File Not Found: %s' % self.path, 404)
-        except IOError as io_error:
-            msg = "'{0}' cannot be read: {1}".format(self.path, io_error)
-            self.handle_error(io_error)
-
-    # serving different types of contents
     def send_content(self, content, status=200):
-        mime_type = self.get_mimetype(content)
+        mime_type = self.guess_type(content)
         self.send_response(status)
-        self.send_header("Location", self.full_path)
-        self.send_header("Content-type", mime_type[1])
-        self.send_header("Content-Length", str(len(content)))
+        self.send_header("Location", self.path)
+        self.send_header('Content-type', mime_type[1])
+        # self.send_header("Content-Length", str(len(content)))
         self.send_header("User-Agent", str(self.headers))
-        self.end_headers()
-        if isinstance(content, str):
-            self.wfile.write(content.encode(encoding="utf-8"))
-        else:
-            self.wfile.write(content)
-
-    # messages logs
-    def log_message(self, format: str, *args):
-        Logs.access_log(self, *args)
-        Logs.server_log(self, *args)
 
 
 if __name__ == '__main__':
@@ -242,5 +261,9 @@ if __name__ == '__main__':
         ip_address = ""
     else:
         ip_address = IP
-    with MultipleRequestsHandler((str(ip_address), int(PORT)), Main) as httpd:
-        httpd.serve_forever()
+    with MultipleRequestsHandler((str(ip_address), 9000), main) as httpd:
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nKeyboard interrupt received, exiting.")
+            sys.exit(0)
