@@ -1,0 +1,14 @@
+[Unit]
+Description=scalable web server
+After=multi-user.target
+
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env python3 /home/spikker/Desktop/FinalProject/main.py
+
+
+
+[Install]
+WantedBy=multi-user.target
+
