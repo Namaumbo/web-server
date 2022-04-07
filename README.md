@@ -34,9 +34,14 @@
 		->systemctl stop <servicename>
 		
 #logrotation
-	1.first copy Logs folder into /var/log	.
+
+	1.first copy Logs folder into /var/log	
+
 	2.find a log.conf file in the folder
+
 	3.copy the file into /etc/logrotate.d/
+
 	4.To test if it is working do dry-run command
+
 		->logrotate -d /etc/logrotate.d/Logs
 			
