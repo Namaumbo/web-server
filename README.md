@@ -33,7 +33,7 @@
 	6.And finally stop the service anytime by running the command below
 		->systemctl stop <servicename>
 		
-# logrotation
+# log rotation
 
 	1.first copy Logs folder into /var/log	
 
