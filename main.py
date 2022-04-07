@@ -127,9 +127,7 @@ class main(BaseHTTPRequestHandler):
     }
 
     def __init__(self, *args, directory=None, **kwargs):
-        # if directory is None:
-        #     directory = os.getcwd()
-        # self.directory = os.fspath(directory)
+      
         super().__init__(*args, **kwargs)
         self.full_path = None
 
@@ -157,9 +155,27 @@ class main(BaseHTTPRequestHandler):
 
     def send_head(self):
         # path = self.translate_path(self.path)
-        self.full_path = DIRECTORIES + self.path
-        # not working kaye
+        # global final_path
+        if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
+            self.full_path = edulab_directory + self.path
+        elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
+            print(hangover_directory)
+            self.full_path = hangover_directory+ self.path
+        else:
+            self.full_path = DIRECTORIES + self.path
+        # if not self.path.endswith('/'):
+        #     self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+        #     self.send_header('Location', self.path + "/")
+        #     self.end_headers()
+        #     return None
+
         if os.path.isdir(self.full_path):
+
+            if not self.path.endswith('/'):
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header("Location", self.path)
+                self.send_header("Content-Length", "0")
+                return None
             for index in "index.html", "index.htm":
                 index = os.path.join(self.full_path, index)
                 if os.path.exists(index):
@@ -167,7 +183,7 @@ class main(BaseHTTPRequestHandler):
                     break
             else:
                 return self.list_directory(self.full_path)
-        mime_type = self.guess_type(self.path)
+        mime_type = self.guess_type(self.full_path)
         if self.full_path.endswith("/"):
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
@@ -192,17 +208,9 @@ class main(BaseHTTPRequestHandler):
 
             entries = os.listdir(full_path)
             display_path = urllib.parse.unquote(self.path, errors='surrogates')
-
-            if not self.path.endswith('/'):
-                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                self.send_header('Location', self.path + "/")
-                self.end_headers()
-                return None
-
             enc = sys.getfilesystemencoding()
             bullets = ['<li><a href="{0}">{0}</a></li>'.format(e) \
                        for e in entries if not e.startswith('.')]
-
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
             f = io.BytesIO()
             f.write(page.encode(encoding="utf-8"), )
