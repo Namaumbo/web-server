@@ -72,7 +72,7 @@ Error_Page = html_string_error
 Listing_Page = html_string_listing
 # reading the configuration file from the operating system
 config = configparser.ConfigParser()
-config.read('/etc/myConfigfiles/myServer.ini')
+config.read('/etc/myConfigfiles/configuration.ini')
 PORT = config.get('Server_info', 'PORT')
 IP = config.get('Server_info', 'IP')
 
