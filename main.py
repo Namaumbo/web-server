@@ -71,7 +71,7 @@ Error_Page = html_string_error
 Listing_Page = html_string_listing
 # reading the configuration file from the operating system
 config = configparser.ConfigParser()
-config.read('/etc/myConfigfiles/configuration.ini')
+config.read('/etc/myConfigfiles/myServer.ini')
 PORT = config.get('Server_info', 'PORT')
 IP = config.get('Server_info', 'IP')
 
@@ -124,9 +124,10 @@ class main(BaseHTTPRequestHandler):
         '.js': 'application/x-javascript',
         '': 'application/octet-stream',  # Default
     }
+    protocol_version = "HTTP/1.1"
 
     def __init__(self, *args, directory=None, **kwargs):
-      
+
         super().__init__(*args, **kwargs)
         self.full_path = None
 
@@ -140,33 +141,26 @@ class main(BaseHTTPRequestHandler):
                 f.close()
 
     def send_head(self):
-        # path = self.translate_path(self.path)
+        # self.full_path = self.translate_path(self.path)
         # global final_path
         if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
             self.full_path = edulab_directory + self.path
         elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
-            print(hangover_directory)
-            self.full_path = hangover_directory+ self.path
+            self.full_path = hangover_directory + self.path
         else:
             self.full_path = DIRECTORIES + self.path
-        # if not self.path.endswith('/'):
-        #     self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-        #     self.send_header('Location', self.path + "/")
-        #     self.end_headers()
-        #     return None
+            full_path = self.full_path.split("%20")
+            self.full_path = " ".join(full_path)
+
 
         if os.path.isdir(self.full_path):
-
-            if not self.path.endswith('/'):
-                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                self.send_header("Location", self.path)
-                self.send_header("Content-Length", "0")
-                return None
             for index in "index.html", "index.htm":
                 index = os.path.join(self.full_path, index)
                 if os.path.exists(index):
                     self.full_path = index
                     break
+
+
             else:
                 return self.list_directory(self.full_path)
         mime_type = self.guess_type(self.full_path)
@@ -193,8 +187,16 @@ class main(BaseHTTPRequestHandler):
         try:
 
             entries = os.listdir(full_path)
+
             display_path = urllib.parse.unquote(self.path, errors='surrogates')
             enc = sys.getfilesystemencoding()
+
+            if not self.path.endswith('/'):
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header('Location', self.path + "/")
+                self.end_headers()
+                return None
+
             bullets = ['<li><a href="{0}">{0}</a></li>'.format(e) \
                        for e in entries if not e.startswith('.')]
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
@@ -269,7 +271,7 @@ if __name__ == '__main__':
         ip_address = ""
     else:
         ip_address = IP
-    with MultipleRequestsHandler((str(ip_address), 9000), main) as httpd:
+    with MultipleRequestsHandler((str(ip_address), int(PORT)), main) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
