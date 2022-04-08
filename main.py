@@ -162,7 +162,7 @@ class main(BaseHTTPRequestHandler):
         #     print(hangover_directory)
         #     self.full_path = hangover_directory+ self.path
         # else:
-        self.full_path = DIRECTORIES + self.path
+        self.full_path = self.path
         # if not self.path.endswith('/'):
         #     self.send_response(HTTPStatus.MOVED_PERMANENTLY)
         #     self.send_header('Location', self.path + "/")
