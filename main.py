@@ -236,9 +236,9 @@ class main(BaseHTTPRequestHandler):
             path += '/'
         return path
 
-    # def log_message(self, format: str, *args):
-    #     Logs.access_log(self, *args)
-    #     Logs.server_log(self, *args)
+    def log_message(self, format: str, *args):
+        Logs.access_log(self, *args)
+        Logs.server_log(self, *args)
 
     def copyfile(self, source, out_put_file):
         shutil.copyfileobj(source, out_put_file)
