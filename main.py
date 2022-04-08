@@ -72,11 +72,9 @@ Error_Page = html_string_error
 Listing_Page = html_string_listing
 # reading the configuration file from the operating system
 config = configparser.ConfigParser()
-<<<<<<< HEAD
 config.read('/etc/myConfigfiles/myServer.ini')
-=======
 config.read('/etc/myConfigFiles/configuration.ini')
->>>>>>> 274c70f6898fd671fcd8165c0a574b981a68afbd
+
 PORT = config.get('Server_info', 'PORT')
 IP = config.get('Server_info', 'IP')
 
@@ -159,19 +157,18 @@ class main(BaseHTTPRequestHandler):
         self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
     def send_head(self):
-<<<<<<< HEAD
         # self.full_path = self.translate_path(self.path)
         # global final_path
-        if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
-            self.full_path = edulab_directory + self.path
-        elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
-            self.full_path = hangover_directory + self.path
-        else:
-            self.full_path = DIRECTORIES + self.path
-            full_path = self.full_path.split("%20")
-            self.full_path = " ".join(full_path)
+        # if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
+        #     self.full_path = edulab_directory + self.path
+        # elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
+        #     self.full_path = hangover_directory + self.path
+        # else:
+        #     self.full_path = DIRECTORIES + self.path
+        #     full_path = self.full_path.split("%20")
+        #     self.full_path = " ".join(full_path)
 
-=======
+
         # # path = self.translate_path(self.path)
         # # global final_path
         # if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
@@ -186,7 +183,7 @@ class main(BaseHTTPRequestHandler):
         #     self.send_header('Location', self.path + "/")
         #     self.end_headers()
         #     return None
->>>>>>> 274c70f6898fd671fcd8165c0a574b981a68afbd
+
 
         if os.path.isdir(self.full_path):
             for index in "index.html", "index.htm":
