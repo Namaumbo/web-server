@@ -10,7 +10,7 @@ import sys
 import urllib.parse
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
-from scripts.logsHandlers.LogsClass import Logs
+# from scripts.logsHandlers.LogsClass import Logs
 from scripts.MultipleRequestHandler import MultipleRequestsHandler
 
 # THE START OF THE SERVER
@@ -72,21 +72,21 @@ Error_Page = html_string_error
 Listing_Page = html_string_listing
 # reading the configuration file from the operating system
 config = configparser.ConfigParser()
-config.read('/etc/myConfigfiles/configuration.ini')
+config.read('/etc/myConfigFiles/configuration.ini')
 PORT = config.get('Server_info', 'PORT')
 IP = config.get('Server_info', 'IP')
 
 DIRECTORIES = config.get('dir', 'DIRECTORIES')
 
-# edulab details
-edulab_directory = config.get('edulabWebsite', 'DocumentRoot')
-edulab_app_name = config.get('edulabWebsite', 'ServerName')
-edulab_app_name_alias = config.get('edulabWebsite', 'aliasServerName')
+# # edulab details
+# edulab_directory = config.get('edulabWebsite', 'DocumentRoot')
+# edulab_app_name = config.get('edulabWebsite', 'ServerName')
+# edulab_app_name_alias = config.get('edulabWebsite', 'aliasServerName')
 
-# hangover details
-hangover_directory = config.get('hangoverWebsite', 'DocumentRoot')
-hangover_app_name = config.get('hangoverWebsite', 'ServerName')
-hangover_app_name_alias = config.get('hangoverWebsite', 'aliasServerName')
+# # hangover details
+# hangover_directory = config.get('hangoverWebsite', 'DocumentRoot')
+# hangover_app_name = config.get('hangoverWebsite', 'ServerName')
+# hangover_app_name_alias = config.get('hangoverWebsite', 'aliasServerName')
 
 DEFAULT_ERROR_MESSAGE = """\
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -154,15 +154,15 @@ class main(BaseHTTPRequestHandler):
         self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
     def send_head(self):
-        # path = self.translate_path(self.path)
-        # global final_path
-        if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
-            self.full_path = edulab_directory + self.path
-        elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
-            print(hangover_directory)
-            self.full_path = hangover_directory+ self.path
-        else:
-            self.full_path = DIRECTORIES + self.path
+        # # path = self.translate_path(self.path)
+        # # global final_path
+        # if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
+        #     self.full_path = edulab_directory + self.path
+        # elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
+        #     print(hangover_directory)
+        #     self.full_path = hangover_directory+ self.path
+        # else:
+        self.full_path = DIRECTORIES + self.path
         # if not self.path.endswith('/'):
         #     self.send_response(HTTPStatus.MOVED_PERMANENTLY)
         #     self.send_header('Location', self.path + "/")

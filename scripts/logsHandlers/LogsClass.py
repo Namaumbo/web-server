@@ -3,11 +3,11 @@ import configparser
 
 # using the config file use the path to append what ever is being sent as a log
 config = configparser.ConfigParser()
-config.read('/etc/myConfigfiles/configuration.ini')
+config.read('/etc/myConfigFiles/configuration.ini')
 
-ERROR_FILE_LOG = config.get('logs', 'ErrorLogs')
-ACCESS_FILE_LOG = config.get('logs', 'AccessLogs')
-SERVER_FILE_LOG = config.get('logs', 'ServerLogs')
+ERROR_FILE_LOG = config.get('log', 'ErrorLogs')
+ACCESS_FILE_LOG = config.get('log', 'AccessLogs')
+SERVER_FILE_LOG = config.get('log', 'ServerLogs')
 
 class Logs:
     def __init__(self):
