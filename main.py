@@ -136,67 +136,89 @@ class main(BaseHTTPRequestHandler):
         f = self.send_head()
         if f:
             try:
+                """this willl copy the file contenets to the wfile rendering to the browser"""
                 self.copyfile(f, self.wfile)
             finally:
                 f.close()
 
     def send_head(self):
-        # self.full_path = self.translate_path(self.path)
-        # global final_path
+        """
+        hosting 2 websites currently headers will be checked to find out what website is requested
+        achieving virtual hosting
+        :return: self.path + self.full_path
+        """
         if self.headers["Host"].split(":")[0] in [edulab_app_name.strip(), edulab_app_name_alias.strip()]:
             self.full_path = edulab_directory + self.path
         elif self.headers["Host"].split(":")[0] in [hangover_app_name.strip(), hangover_app_name_alias.strip()]:
             self.full_path = hangover_directory + self.path
         else:
+            """if no websites requested root directory is returned"""
             self.full_path = DIRECTORIES + self.path
             full_path = self.full_path.split("%20")
             self.full_path = " ".join(full_path)
 
-
+        """if the path contains index.html or index.htm it has to be joined and served"""
         if os.path.isdir(self.full_path):
             for index in "index.html", "index.htm":
                 index = os.path.join(self.full_path, index)
                 if os.path.exists(index):
                     self.full_path = index
                     break
-
-
             else:
+                """if the above condition is false then list the directory"""
                 return self.list_directory(self.full_path)
         mime_type = self.guess_type(self.full_path)
         if self.full_path.endswith("/"):
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
         try:
+            """ opening the file """
             f = open(self.full_path, 'rb')
         except OSError:
+            """if not a file the system will raise exception"""
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
         try:
-            fs = os.fstat(f.fileno())
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Content-type", mime_type)
-            self.send_header("Content-Length", str(fs[6]))
-            self.end_headers()
-            return f
+            """mp3 was not opening so this try method opened the file if the mime type was .mp3"""
+            if mime_type == "mp3":
+                st = os.fstat(f.fileno())
+                length = st.st_size
+                data = f.read()
+                """send headers"""
+                self.send_response(200)
+                self.send_header('Content-type', mime_type[1])
+                self.send_header('Content-Length', str(length))
+                self.send_header('Keep-Alive', 'timeout=5, max=100')
+                self.send_header('Accept-Ranges', 'bytes')
+                self.end_headers()
+                self.wfile.write(data)
+                """ closing the file"""
+                f.close()
+            else:
+                fs = os.fstat(f.fileno())
+                self.send_response(HTTPStatus.OK)
+                self.send_header("Content-type", mime_type)
+                self.send_header("Content-Length", str(fs[6]))
+                self.end_headers()
+                return f
         except:
             f.close()
             raise
 
     def list_directory(self, full_path):
         try:
-
+            """listing directory listings"""
             entries = os.listdir(full_path)
-
             display_path = urllib.parse.unquote(self.path, errors='surrogates')
             enc = sys.getfilesystemencoding()
 
+            """if the path does not end with / then you have to append it a / as you open a directory"""
             if not self.path.endswith('/'):
                 self.send_response(HTTPStatus.MOVED_PERMANENTLY)
                 self.send_header('Location', self.path + "/")
                 self.end_headers()
                 return None
-
+            """listing the directory listings in standard html"""
             bullets = ['<li><a href="{0}">{0}</a></li>'.format(e) \
                        for e in entries if not e.startswith('.')]
             page = Listing_Page.format('\n'.join(bullets), path=display_path)
@@ -209,39 +231,26 @@ class main(BaseHTTPRequestHandler):
             self.end_headers()
             return f
         except OSError:
+            """if the file or directory has OS privelegdes it will send this """
             self.send_error(
                 HTTPStatus.NOT_FOUND,
                 "No permission to list directory")
             return None
 
-    def translate_path(self, path):
-        path = path.split('?', 1)[0]
-        path = path.split('#', 1)[0]
-
-        trailing_slash = path.rstrip().endswith('/')
-        try:
-            path = urllib.parse.unquote(path)
-        except UnicodeDecodeError as message:
-            self.send_content(message, 404)
-
-        path = posixpath.normpath(path)
-        words = path.split('/')
-
-        path = self.directory
-        for word in words:
-            if os.path.dirname(word) or word in (os.curdir, os.pardir):
-                continue
-            path = os.path.join(path, word)
-        if trailing_slash:
-            path += '/'
-        return path
+    """this function will be called after every successful request and access rensposers"""
 
     def log_message(self, format: str, *args):
         Logs.access_log(self, *args)
         Logs.server_log(self, *args)
 
+    """
+    this function will copy the open file to the wfile which is later rendered on the browser
+    """
+
     def copyfile(self, source, out_put_file):
         shutil.copyfileobj(source, out_put_file)
+
+    """This function will be used to return a mime type of a path"""
 
     def guess_type(self, path):
 
@@ -256,21 +265,15 @@ class main(BaseHTTPRequestHandler):
             return guess
         return 'application/octet-stream'
 
-    def send_content(self, content, status=200):
-        mime_type = self.guess_type(content)
-        self.send_response(status)
-        self.send_header("Location", self.path)
-        self.send_header('Content-type', mime_type[1])
-        # self.send_header("Content-Length", str(len(content)))
-        self.send_header("User-Agent", str(self.headers))
 
-
+"""main entry of the applicaiton"""
 if __name__ == '__main__':
     global ip_address
     if IP is None:
         ip_address = ""
     else:
         ip_address = IP
+        """multithreading handler class"""
     with MultipleRequestsHandler((str(ip_address), int(PORT)), main) as httpd:
         try:
             httpd.serve_forever()
