@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module main</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>main</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/mandevu/Desktop/web-server/main.py">/home/mandevu/Desktop/web-server/main.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="configparser.html">configparser</a><br>
+<a href="io.html">io</a><br>
+<a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="mimetypes.html">mimetypes</a><br>
+<a href="os.html">os</a><br>
+<a href="posixpath.html">posixpath</a><br>
+</td><td width="25%" valign=top><a href="shutil.html">shutil</a><br>
+<a href="sys.html">sys</a><br>
+<a href="urllib.html">urllib</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>(<a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="main.html#main">main</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="main">class <strong>main</strong></a>(<a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#main">main</a>(*args,&nbsp;directory=None,&nbsp;**kwargs)<br>
+&nbsp;<br>
+HTTP&nbsp;request&nbsp;handler&nbsp;base&nbsp;class.<br>
+&nbsp;<br>
+The&nbsp;following&nbsp;explanation&nbsp;of&nbsp;HTTP&nbsp;serves&nbsp;to&nbsp;guide&nbsp;you&nbsp;through&nbsp;the<br>
+code&nbsp;as&nbsp;well&nbsp;as&nbsp;to&nbsp;expose&nbsp;any&nbsp;misunderstandings&nbsp;I&nbsp;may&nbsp;have&nbsp;about<br>
+HTTP&nbsp;(so&nbsp;you&nbsp;don't&nbsp;need&nbsp;to&nbsp;read&nbsp;the&nbsp;code&nbsp;to&nbsp;figure&nbsp;out&nbsp;I'm&nbsp;wrong<br>
+:-).<br>
+&nbsp;<br>
+HTTP&nbsp;(HyperText&nbsp;Transfer&nbsp;Protocol)&nbsp;is&nbsp;an&nbsp;extensible&nbsp;protocol&nbsp;on<br>
+top&nbsp;of&nbsp;a&nbsp;reliable&nbsp;stream&nbsp;transport&nbsp;(e.g.&nbsp;TCP/IP).&nbsp;&nbsp;The&nbsp;protocol<br>
+recognizes&nbsp;three&nbsp;parts&nbsp;to&nbsp;a&nbsp;request:<br>
+&nbsp;<br>
+1.&nbsp;One&nbsp;line&nbsp;identifying&nbsp;the&nbsp;request&nbsp;type&nbsp;and&nbsp;path<br>
+2.&nbsp;An&nbsp;optional&nbsp;set&nbsp;of&nbsp;<a href="http://www.rfc-editor.org/rfc/rfc822.txt">RFC-822</a>-style&nbsp;headers<br>
+3.&nbsp;An&nbsp;optional&nbsp;data&nbsp;part<br>
+&nbsp;<br>
+The&nbsp;headers&nbsp;and&nbsp;data&nbsp;are&nbsp;separated&nbsp;by&nbsp;a&nbsp;blank&nbsp;line.<br>
+&nbsp;<br>
+The&nbsp;first&nbsp;line&nbsp;of&nbsp;the&nbsp;request&nbsp;has&nbsp;the&nbsp;form<br>
+&nbsp;<br>
+&lt;command&gt;&nbsp;&lt;path&gt;&nbsp;&lt;version&gt;<br>
+&nbsp;<br>
+where&nbsp;&lt;command&gt;&nbsp;is&nbsp;a&nbsp;(case-sensitive)&nbsp;keyword&nbsp;such&nbsp;as&nbsp;GET&nbsp;or&nbsp;POST,<br>
+&lt;path&gt;&nbsp;is&nbsp;a&nbsp;string&nbsp;containing&nbsp;path&nbsp;information&nbsp;for&nbsp;the&nbsp;request,<br>
+and&nbsp;&lt;version&gt;&nbsp;should&nbsp;be&nbsp;the&nbsp;string&nbsp;"HTTP/1.0"&nbsp;or&nbsp;"HTTP/1.1".<br>
+&lt;path&gt;&nbsp;is&nbsp;encoded&nbsp;using&nbsp;the&nbsp;URL&nbsp;encoding&nbsp;scheme&nbsp;(using&nbsp;%xx&nbsp;to&nbsp;signify<br>
+the&nbsp;ASCII&nbsp;character&nbsp;with&nbsp;hex&nbsp;code&nbsp;xx).<br>
+&nbsp;<br>
+The&nbsp;specification&nbsp;specifies&nbsp;that&nbsp;lines&nbsp;are&nbsp;separated&nbsp;by&nbsp;CRLF&nbsp;but<br>
+for&nbsp;compatibility&nbsp;with&nbsp;the&nbsp;widest&nbsp;range&nbsp;of&nbsp;clients&nbsp;recommends<br>
+servers&nbsp;also&nbsp;handle&nbsp;LF.&nbsp;&nbsp;Similarly,&nbsp;whitespace&nbsp;in&nbsp;the&nbsp;request&nbsp;line<br>
+is&nbsp;treated&nbsp;sensibly&nbsp;(allowing&nbsp;multiple&nbsp;spaces&nbsp;between&nbsp;components<br>
+and&nbsp;allowing&nbsp;trailing&nbsp;whitespace).<br>
+&nbsp;<br>
+Similarly,&nbsp;for&nbsp;output,&nbsp;lines&nbsp;ought&nbsp;to&nbsp;be&nbsp;separated&nbsp;by&nbsp;CRLF&nbsp;pairs<br>
+but&nbsp;most&nbsp;clients&nbsp;grok&nbsp;LF&nbsp;characters&nbsp;just&nbsp;fine.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;first&nbsp;line&nbsp;of&nbsp;the&nbsp;request&nbsp;has&nbsp;the&nbsp;form<br>
+&nbsp;<br>
+&lt;command&gt;&nbsp;&lt;path&gt;<br>
+&nbsp;<br>
+(i.e.&nbsp;&lt;version&gt;&nbsp;is&nbsp;left&nbsp;out)&nbsp;then&nbsp;this&nbsp;is&nbsp;assumed&nbsp;to&nbsp;be&nbsp;an&nbsp;HTTP<br>
+0.9&nbsp;request;&nbsp;this&nbsp;form&nbsp;has&nbsp;no&nbsp;optional&nbsp;headers&nbsp;and&nbsp;data&nbsp;part&nbsp;and<br>
+the&nbsp;reply&nbsp;consists&nbsp;of&nbsp;just&nbsp;the&nbsp;data.<br>
+&nbsp;<br>
+The&nbsp;reply&nbsp;form&nbsp;of&nbsp;the&nbsp;HTTP&nbsp;1.x&nbsp;protocol&nbsp;again&nbsp;has&nbsp;three&nbsp;parts:<br>
+&nbsp;<br>
+1.&nbsp;One&nbsp;line&nbsp;giving&nbsp;the&nbsp;response&nbsp;code<br>
+2.&nbsp;An&nbsp;optional&nbsp;set&nbsp;of&nbsp;<a href="http://www.rfc-editor.org/rfc/rfc822.txt">RFC-822</a>-style&nbsp;headers<br>
+3.&nbsp;The&nbsp;data<br>
+&nbsp;<br>
+Again,&nbsp;the&nbsp;headers&nbsp;and&nbsp;data&nbsp;are&nbsp;separated&nbsp;by&nbsp;a&nbsp;blank&nbsp;line.<br>
+&nbsp;<br>
+The&nbsp;response&nbsp;code&nbsp;line&nbsp;has&nbsp;the&nbsp;form<br>
+&nbsp;<br>
+&lt;version&gt;&nbsp;&lt;responsecode&gt;&nbsp;&lt;responsestring&gt;<br>
+&nbsp;<br>
+where&nbsp;&lt;version&gt;&nbsp;is&nbsp;the&nbsp;protocol&nbsp;version&nbsp;("HTTP/1.0"&nbsp;or&nbsp;"HTTP/1.1"),<br>
+&lt;responsecode&gt;&nbsp;is&nbsp;a&nbsp;3-digit&nbsp;response&nbsp;code&nbsp;indicating&nbsp;success&nbsp;or<br>
+failure&nbsp;of&nbsp;the&nbsp;request,&nbsp;and&nbsp;&lt;responsestring&gt;&nbsp;is&nbsp;an&nbsp;optional<br>
+human-readable&nbsp;string&nbsp;explaining&nbsp;what&nbsp;the&nbsp;response&nbsp;code&nbsp;means.<br>
+&nbsp;<br>
+This&nbsp;server&nbsp;parses&nbsp;the&nbsp;request&nbsp;and&nbsp;the&nbsp;headers,&nbsp;and&nbsp;then&nbsp;calls&nbsp;a<br>
+function&nbsp;specific&nbsp;to&nbsp;the&nbsp;request&nbsp;type&nbsp;(&lt;command&gt;).&nbsp;&nbsp;Specifically,<br>
+a&nbsp;request&nbsp;SPAM&nbsp;will&nbsp;be&nbsp;handled&nbsp;by&nbsp;a&nbsp;method&nbsp;do_SPAM().&nbsp;&nbsp;If&nbsp;no<br>
+such&nbsp;method&nbsp;exists&nbsp;the&nbsp;server&nbsp;sends&nbsp;an&nbsp;error&nbsp;response&nbsp;to&nbsp;the<br>
+client.&nbsp;&nbsp;If&nbsp;it&nbsp;exists,&nbsp;it&nbsp;is&nbsp;called&nbsp;with&nbsp;no&nbsp;arguments:<br>
+&nbsp;<br>
+do_SPAM()<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;the&nbsp;request&nbsp;name&nbsp;is&nbsp;case&nbsp;sensitive&nbsp;(i.e.&nbsp;SPAM&nbsp;and&nbsp;spam<br>
+are&nbsp;different&nbsp;requests).<br>
+&nbsp;<br>
+The&nbsp;various&nbsp;request&nbsp;details&nbsp;are&nbsp;stored&nbsp;in&nbsp;instance&nbsp;variables:<br>
+&nbsp;<br>
+-&nbsp;client_address&nbsp;is&nbsp;the&nbsp;client&nbsp;IP&nbsp;address&nbsp;in&nbsp;the&nbsp;form&nbsp;(host,<br>
+port);<br>
+&nbsp;<br>
+-&nbsp;command,&nbsp;path&nbsp;and&nbsp;version&nbsp;are&nbsp;the&nbsp;broken-down&nbsp;request&nbsp;line;<br>
+&nbsp;<br>
+-&nbsp;headers&nbsp;is&nbsp;an&nbsp;instance&nbsp;of&nbsp;email.message.Message&nbsp;(or&nbsp;a&nbsp;derived<br>
+class)&nbsp;containing&nbsp;the&nbsp;header&nbsp;information;<br>
+&nbsp;<br>
+-&nbsp;rfile&nbsp;is&nbsp;a&nbsp;file&nbsp;object&nbsp;open&nbsp;for&nbsp;reading&nbsp;positioned&nbsp;at&nbsp;the<br>
+start&nbsp;of&nbsp;the&nbsp;optional&nbsp;input&nbsp;data&nbsp;part;<br>
+&nbsp;<br>
+-&nbsp;wfile&nbsp;is&nbsp;a&nbsp;file&nbsp;object&nbsp;open&nbsp;for&nbsp;writing.<br>
+&nbsp;<br>
+IT&nbsp;IS&nbsp;IMPORTANT&nbsp;TO&nbsp;ADHERE&nbsp;TO&nbsp;THE&nbsp;PROTOCOL&nbsp;FOR&nbsp;WRITING!<br>
+&nbsp;<br>
+The&nbsp;first&nbsp;thing&nbsp;to&nbsp;be&nbsp;written&nbsp;must&nbsp;be&nbsp;the&nbsp;response&nbsp;line.&nbsp;&nbsp;Then<br>
+follow&nbsp;0&nbsp;or&nbsp;more&nbsp;header&nbsp;lines,&nbsp;then&nbsp;a&nbsp;blank&nbsp;line,&nbsp;and&nbsp;then&nbsp;the<br>
+actual&nbsp;data&nbsp;(if&nbsp;any).&nbsp;&nbsp;The&nbsp;meaning&nbsp;of&nbsp;the&nbsp;header&nbsp;lines&nbsp;depends&nbsp;on<br>
+the&nbsp;command&nbsp;executed&nbsp;by&nbsp;the&nbsp;server;&nbsp;in&nbsp;most&nbsp;cases,&nbsp;when&nbsp;data&nbsp;is<br>
+returned,&nbsp;there&nbsp;should&nbsp;be&nbsp;at&nbsp;least&nbsp;one&nbsp;header&nbsp;line&nbsp;of&nbsp;the&nbsp;form<br>
+&nbsp;<br>
+Content-type:&nbsp;&lt;type&gt;/&lt;subtype&gt;<br>
+&nbsp;<br>
+where&nbsp;&lt;type&gt;&nbsp;and&nbsp;&lt;subtype&gt;&nbsp;should&nbsp;be&nbsp;registered&nbsp;MIME&nbsp;types,<br>
+e.g.&nbsp;"text/html"&nbsp;or&nbsp;"text/plain".<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="main.html#main">main</a></dd>
+<dd><a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a></dd>
+<dd><a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a></dd>
+<dd><a href="socketserver.html#BaseRequestHandler">socketserver.BaseRequestHandler</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="main-__init__"><strong>__init__</strong></a>(self, *args, directory=None, **kwargs)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="main-copyfile"><strong>copyfile</strong></a>(self, source, out_put_file)</dt></dl>
+
+<dl><dt><a name="main-do_GET"><strong>do_GET</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="main-do_POST"><strong>do_POST</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="main-guess_type"><strong>guess_type</strong></a>(self, path)</dt></dl>
+
+<dl><dt><a name="main-list_directory"><strong>list_directory</strong></a>(self, full_path)</dt></dl>
+
+<dl><dt><a name="main-send_content"><strong>send_content</strong></a>(self, content, status=200)</dt></dl>
+
+<dl><dt><a name="main-send_head"><strong>send_head</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="main-translate_path"><strong>translate_path</strong></a>(self, path)</dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>extensions_map</strong> = {'': 'application/octet-stream', '.css': 'text/css', '.html': 'text/html', '.jpg': 'image/jpg', '.js': 'application/x-javascript', '.json': 'application/json', '.manifest': 'text/cache-manifest', '.mp3': 'application/x-mplayer2', '.mp4': 'video/mpeg', '.pdf': 'application/pdf', ...}</dl>
+
+<dl><dt><strong>protocol_version</strong> = 'HTTP/1.1'</dl>
+
+<hr>
+Methods inherited from <a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>:<br>
+<dl><dt><a name="main-address_string"><strong>address_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;client&nbsp;address.</tt></dd></dl>
+
+<dl><dt><a name="main-date_time_string"><strong>date_time_string</strong></a>(self, timestamp=None)</dt><dd><tt>Return&nbsp;the&nbsp;current&nbsp;date&nbsp;and&nbsp;time&nbsp;formatted&nbsp;for&nbsp;a&nbsp;message&nbsp;header.</tt></dd></dl>
+
+<dl><dt><a name="main-end_headers"><strong>end_headers</strong></a>(self)</dt><dd><tt>Send&nbsp;the&nbsp;blank&nbsp;line&nbsp;ending&nbsp;the&nbsp;MIME&nbsp;headers.</tt></dd></dl>
+
+<dl><dt><a name="main-flush_headers"><strong>flush_headers</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="main-handle"><strong>handle</strong></a>(self)</dt><dd><tt>Handle&nbsp;multiple&nbsp;requests&nbsp;if&nbsp;necessary.</tt></dd></dl>
+
+<dl><dt><a name="main-handle_expect_100"><strong>handle_expect_100</strong></a>(self)</dt><dd><tt>Decide&nbsp;what&nbsp;to&nbsp;do&nbsp;with&nbsp;an&nbsp;"Expect:&nbsp;100-continue"&nbsp;header.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;client&nbsp;is&nbsp;expecting&nbsp;a&nbsp;100&nbsp;Continue&nbsp;response,&nbsp;we&nbsp;must<br>
+respond&nbsp;with&nbsp;either&nbsp;a&nbsp;100&nbsp;Continue&nbsp;or&nbsp;a&nbsp;final&nbsp;response&nbsp;before<br>
+waiting&nbsp;for&nbsp;the&nbsp;request&nbsp;body.&nbsp;The&nbsp;default&nbsp;is&nbsp;to&nbsp;always&nbsp;respond<br>
+with&nbsp;a&nbsp;100&nbsp;Continue.&nbsp;You&nbsp;can&nbsp;behave&nbsp;differently&nbsp;(for&nbsp;example,<br>
+reject&nbsp;unauthorized&nbsp;requests)&nbsp;by&nbsp;overriding&nbsp;this&nbsp;method.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;should&nbsp;either&nbsp;return&nbsp;True&nbsp;(possibly&nbsp;after&nbsp;sending<br>
+a&nbsp;100&nbsp;Continue&nbsp;response)&nbsp;or&nbsp;send&nbsp;an&nbsp;error&nbsp;response&nbsp;and&nbsp;return<br>
+False.</tt></dd></dl>
+
+<dl><dt><a name="main-handle_one_request"><strong>handle_one_request</strong></a>(self)</dt><dd><tt>Handle&nbsp;a&nbsp;single&nbsp;HTTP&nbsp;request.<br>
+&nbsp;<br>
+You&nbsp;normally&nbsp;don't&nbsp;need&nbsp;to&nbsp;override&nbsp;this&nbsp;method;&nbsp;see&nbsp;the&nbsp;class<br>
+__doc__&nbsp;string&nbsp;for&nbsp;information&nbsp;on&nbsp;how&nbsp;to&nbsp;handle&nbsp;specific&nbsp;HTTP<br>
+commands&nbsp;such&nbsp;as&nbsp;GET&nbsp;and&nbsp;POST.</tt></dd></dl>
+
+<dl><dt><a name="main-log_date_time_string"><strong>log_date_time_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;current&nbsp;time&nbsp;formatted&nbsp;for&nbsp;logging.</tt></dd></dl>
+
+<dl><dt><a name="main-log_error"><strong>log_error</strong></a>(self, format, *args)</dt><dd><tt>Log&nbsp;an&nbsp;error.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;called&nbsp;when&nbsp;a&nbsp;request&nbsp;cannot&nbsp;be&nbsp;fulfilled.&nbsp;&nbsp;By<br>
+default&nbsp;it&nbsp;passes&nbsp;the&nbsp;message&nbsp;on&nbsp;to&nbsp;<a href="#main-log_message">log_message</a>().<br>
+&nbsp;<br>
+Arguments&nbsp;are&nbsp;the&nbsp;same&nbsp;as&nbsp;for&nbsp;<a href="#main-log_message">log_message</a>().<br>
+&nbsp;<br>
+XXX&nbsp;This&nbsp;should&nbsp;go&nbsp;to&nbsp;the&nbsp;separate&nbsp;error&nbsp;log.</tt></dd></dl>
+
+<dl><dt><a name="main-log_message"><strong>log_message</strong></a>(self, format, *args)</dt><dd><tt>Log&nbsp;an&nbsp;arbitrary&nbsp;message.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;used&nbsp;by&nbsp;all&nbsp;other&nbsp;logging&nbsp;functions.&nbsp;&nbsp;Override<br>
+it&nbsp;if&nbsp;you&nbsp;have&nbsp;specific&nbsp;logging&nbsp;wishes.<br>
+&nbsp;<br>
+The&nbsp;first&nbsp;argument,&nbsp;FORMAT,&nbsp;is&nbsp;a&nbsp;format&nbsp;string&nbsp;for&nbsp;the<br>
+message&nbsp;to&nbsp;be&nbsp;logged.&nbsp;&nbsp;If&nbsp;the&nbsp;format&nbsp;string&nbsp;contains<br>
+any&nbsp;%&nbsp;escapes&nbsp;requiring&nbsp;parameters,&nbsp;they&nbsp;should&nbsp;be<br>
+specified&nbsp;as&nbsp;subsequent&nbsp;arguments&nbsp;(it's&nbsp;just&nbsp;like<br>
+printf!).<br>
+&nbsp;<br>
+The&nbsp;client&nbsp;ip&nbsp;and&nbsp;current&nbsp;date/time&nbsp;are&nbsp;prefixed&nbsp;to<br>
+every&nbsp;message.</tt></dd></dl>
+
+<dl><dt><a name="main-log_request"><strong>log_request</strong></a>(self, code='-', size='-')</dt><dd><tt>Log&nbsp;an&nbsp;accepted&nbsp;request.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;called&nbsp;by&nbsp;<a href="#main-send_response">send_response</a>().</tt></dd></dl>
+
+<dl><dt><a name="main-parse_request"><strong>parse_request</strong></a>(self)</dt><dd><tt>Parse&nbsp;a&nbsp;request&nbsp;(internal).<br>
+&nbsp;<br>
+The&nbsp;request&nbsp;should&nbsp;be&nbsp;stored&nbsp;in&nbsp;self.<strong>raw_requestline</strong>;&nbsp;the&nbsp;results<br>
+are&nbsp;in&nbsp;self.<strong>command</strong>,&nbsp;self.<strong>path</strong>,&nbsp;self.<strong>request_version</strong>&nbsp;and<br>
+self.<strong>headers</strong>.<br>
+&nbsp;<br>
+Return&nbsp;True&nbsp;for&nbsp;success,&nbsp;False&nbsp;for&nbsp;failure;&nbsp;on&nbsp;failure,&nbsp;any&nbsp;relevant<br>
+error&nbsp;response&nbsp;has&nbsp;already&nbsp;been&nbsp;sent&nbsp;back.</tt></dd></dl>
+
+<dl><dt><a name="main-send_error"><strong>send_error</strong></a>(self, code, message=None, explain=None)</dt><dd><tt>Send&nbsp;and&nbsp;log&nbsp;an&nbsp;error&nbsp;reply.<br>
+&nbsp;<br>
+Arguments&nbsp;are<br>
+*&nbsp;code:&nbsp;&nbsp;&nbsp;&nbsp;an&nbsp;HTTP&nbsp;error&nbsp;code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;digits<br>
+*&nbsp;message:&nbsp;a&nbsp;simple&nbsp;optional&nbsp;1&nbsp;line&nbsp;reason&nbsp;phrase.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*(&nbsp;HTAB&nbsp;/&nbsp;SP&nbsp;/&nbsp;VCHAR&nbsp;/&nbsp;%x80-FF&nbsp;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;defaults&nbsp;to&nbsp;short&nbsp;entry&nbsp;matching&nbsp;the&nbsp;response&nbsp;code<br>
+*&nbsp;explain:&nbsp;a&nbsp;detailed&nbsp;message&nbsp;defaults&nbsp;to&nbsp;the&nbsp;long&nbsp;entry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matching&nbsp;the&nbsp;response&nbsp;code.<br>
+&nbsp;<br>
+This&nbsp;sends&nbsp;an&nbsp;error&nbsp;response&nbsp;(so&nbsp;it&nbsp;must&nbsp;be&nbsp;called&nbsp;before&nbsp;any<br>
+output&nbsp;has&nbsp;been&nbsp;generated),&nbsp;logs&nbsp;the&nbsp;error,&nbsp;and&nbsp;finally&nbsp;sends<br>
+a&nbsp;piece&nbsp;of&nbsp;HTML&nbsp;explaining&nbsp;the&nbsp;error&nbsp;to&nbsp;the&nbsp;user.</tt></dd></dl>
+
+<dl><dt><a name="main-send_header"><strong>send_header</strong></a>(self, keyword, value)</dt><dd><tt>Send&nbsp;a&nbsp;MIME&nbsp;header&nbsp;to&nbsp;the&nbsp;headers&nbsp;buffer.</tt></dd></dl>
+
+<dl><dt><a name="main-send_response"><strong>send_response</strong></a>(self, code, message=None)</dt><dd><tt>Add&nbsp;the&nbsp;response&nbsp;header&nbsp;to&nbsp;the&nbsp;headers&nbsp;buffer&nbsp;and&nbsp;log&nbsp;the<br>
+response&nbsp;code.<br>
+&nbsp;<br>
+Also&nbsp;send&nbsp;two&nbsp;standard&nbsp;headers&nbsp;with&nbsp;the&nbsp;server&nbsp;software<br>
+version&nbsp;and&nbsp;the&nbsp;current&nbsp;date.</tt></dd></dl>
+
+<dl><dt><a name="main-send_response_only"><strong>send_response_only</strong></a>(self, code, message=None)</dt><dd><tt>Send&nbsp;the&nbsp;response&nbsp;header&nbsp;only.</tt></dd></dl>
+
+<dl><dt><a name="main-version_string"><strong>version_string</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;server&nbsp;software&nbsp;version&nbsp;string.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="http.server.html#BaseHTTPRequestHandler">http.server.BaseHTTPRequestHandler</a>:<br>
+<dl><dt><strong>MessageClass</strong> = &lt;class 'http.client.HTTPMessage'&gt;</dl>
+
+<dl><dt><strong>default_request_version</strong> = 'HTTP/0.9'</dl>
+
+<dl><dt><strong>error_content_type</strong> = 'text/html;charset=utf-8'</dl>
+
+<dl><dt><strong>error_message_format</strong> = '&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN... %(code)s - %(explain)s.&lt;/p&gt;<font color="#c040c0">\n</font>    &lt;/body&gt;<font color="#c040c0">\n</font>&lt;/html&gt;<font color="#c040c0">\n</font>'</dl>
+
+<dl><dt><strong>monthname</strong> = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']</dl>
+
+<dl><dt><strong>responses</strong> = {&lt;HTTPStatus.CONTINUE: 100&gt;: ('Continue', 'Request received, please continue'), &lt;HTTPStatus.SWITCHING_PROTOCOLS: 101&gt;: ('Switching Protocols', 'Switching to new protocol; obey Upgrade header'), &lt;HTTPStatus.PROCESSING: 102&gt;: ('Processing', ''), &lt;HTTPStatus.OK: 200&gt;: ('OK', 'Request fulfilled, document follows'), &lt;HTTPStatus.CREATED: 201&gt;: ('Created', 'Document created, URL follows'), &lt;HTTPStatus.ACCEPTED: 202&gt;: ('Accepted', 'Request accepted, processing continues off-line'), &lt;HTTPStatus.NON_AUTHORITATIVE_INFORMATION: 203&gt;: ('Non-Authoritative Information', 'Request fulfilled from cache'), &lt;HTTPStatus.NO_CONTENT: 204&gt;: ('No Content', 'Request fulfilled, nothing follows'), &lt;HTTPStatus.RESET_CONTENT: 205&gt;: ('Reset Content', 'Clear input form for further input'), &lt;HTTPStatus.PARTIAL_CONTENT: 206&gt;: ('Partial Content', 'Partial content follows'), ...}</dl>
+
+<dl><dt><strong>server_version</strong> = 'BaseHTTP/0.6'</dl>
+
+<dl><dt><strong>sys_version</strong> = 'Python/3.8.10'</dl>
+
+<dl><dt><strong>weekdayname</strong> = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']</dl>
+
+<hr>
+Methods inherited from <a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a>:<br>
+<dl><dt><a name="main-finish"><strong>finish</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="main-setup"><strong>setup</strong></a>(self)</dt></dl>
+
+<hr>
+Data and other attributes inherited from <a href="socketserver.html#StreamRequestHandler">socketserver.StreamRequestHandler</a>:<br>
+<dl><dt><strong>disable_nagle_algorithm</strong> = False</dl>
+
+<dl><dt><strong>rbufsize</strong> = -1</dl>
+
+<dl><dt><strong>timeout</strong> = None</dl>
+
+<dl><dt><strong>wbufsize</strong> = 0</dl>
+
+<hr>
+Data descriptors inherited from <a href="socketserver.html#BaseRequestHandler">socketserver.BaseRequestHandler</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>DEFAULT_ERROR_MESSAGE</strong> = '&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN... %(code)s - %(explain)s.&lt;/p&gt;<font color="#c040c0">\n</font>    &lt;/body&gt;<font color="#c040c0">\n</font>&lt;/html&gt;<font color="#c040c0">\n</font>'<br>
+<strong>DIRECTORIES</strong> = 'home/spikker/Desktop'<br>
+<strong>Error_Page</strong> = '<font color="#c040c0">\n</font>&lt;html lang="en"&gt;<font color="#c040c0">\n</font>&lt;head&gt;<font color="#c040c0">\n</font>    &lt;meta charset="UTF-...sing {path}&lt;/h1&gt;<font color="#c040c0">\n</font>       &lt;p&gt;{message}&lt;/p&gt;<font color="#c040c0">\n</font>&lt;/body&gt;<font color="#c040c0">\n</font>'<br>
+<strong>IP</strong> = ''<br>
+<strong>Listing_Page</strong> = '<font color="#c040c0">\n\n</font>&lt;html lang="en"&gt;<font color="#c040c0">\n</font>&lt;head&gt;<font color="#c040c0">\n</font>    &lt;meta charset="UTF...}&lt;/b&gt;&lt;/h2&gt;<font color="#c040c0">\n</font>&lt;hr/&gt;<font color="#c040c0">\n</font>&lt;br/&gt;<font color="#c040c0">\n</font>&lt;ul&gt;<font color="#c040c0">\n</font>  {0}<font color="#c040c0">\n</font>&lt;/ul&gt;<font color="#c040c0">\n</font>&lt;/body&gt;<font color="#c040c0">\n</font> '<br>
+<strong>PORT</strong> = '8000'<br>
+<strong>config</strong> = &lt;configparser.ConfigParser object&gt;<br>
+<strong>html_string_error</strong> = '<font color="#c040c0">\n</font>&lt;html lang="en"&gt;<font color="#c040c0">\n</font>&lt;head&gt;<font color="#c040c0">\n</font>    &lt;meta charset="UTF-...sing {path}&lt;/h1&gt;<font color="#c040c0">\n</font>       &lt;p&gt;{message}&lt;/p&gt;<font color="#c040c0">\n</font>&lt;/body&gt;<font color="#c040c0">\n</font>'<br>
+<strong>html_string_listing</strong> = '<font color="#c040c0">\n\n</font>&lt;html lang="en"&gt;<font color="#c040c0">\n</font>&lt;head&gt;<font color="#c040c0">\n</font>    &lt;meta charset="UTF...}&lt;/b&gt;&lt;/h2&gt;<font color="#c040c0">\n</font>&lt;hr/&gt;<font color="#c040c0">\n</font>&lt;br/&gt;<font color="#c040c0">\n</font>&lt;ul&gt;<font color="#c040c0">\n</font>  {0}<font color="#c040c0">\n</font>&lt;/ul&gt;<font color="#c040c0">\n</font>&lt;/body&gt;<font color="#c040c0">\n</font> '</td></tr></table>
+</body></html>
