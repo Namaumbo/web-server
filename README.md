@@ -34,6 +34,7 @@
 		->systemctl stop <servicename>
 		
 #logrotation
+
 	1.first copy Logs folder into /var/log.
 	
 	2.find a log.conf file in the folder
